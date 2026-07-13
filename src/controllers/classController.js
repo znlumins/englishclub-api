@@ -66,6 +66,12 @@ export const enrollClass = async (req, res) => {
       }
     });
 
+    // Gamification: Add +50 points for enrolling
+    await prisma.user.update({
+      where: { id: userId },
+      data: { points: { increment: 50 } }
+    });
+
     res.status(201).json({ success: true, data: enrollment });
   } catch (error) {
     console.error(error);

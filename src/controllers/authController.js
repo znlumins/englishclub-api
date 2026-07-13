@@ -68,6 +68,44 @@ export const login = async (req, res) => {
       return res.status(403).json({ success: false, error: { message: 'Your account has been blocked' } });
     }
 
+    // Gamification: Daily Login Logic
+    const now = new Date();
+    let newStreak = user.streak_days || 0;
+    let newPoints = user.points || 0;
+
+    if (!user.last_active_at) {
+      // First time login
+      newStreak = 1;
+      newPoints += 10;
+    } else {
+      const lastActive = new Date(user.last_active_at);
+      const isToday = lastActive.toDateString() === now.toDateString();
+      
+      if (!isToday) {
+        // Calculate difference in days
+        const diffTime = Math.abs(now - lastActive);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+        
+        if (diffDays === 1) {
+          // Logged in yesterday, increment streak
+          newStreak += 1;
+        } else {
+          // Streak broken
+          newStreak = 1;
+        }
+        newPoints += 10; // +10 points for daily login
+      }
+    }
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        last_active_at: now,
+        streak_days: newStreak,
+        points: newPoints
+      }
+    });
+
     const token = jwt.sign(
       { id: user.id, email: user.email, role: user.role, status: user.status },
       JWT_SECRET,
@@ -113,5 +151,42 @@ export const me = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, error: { message: 'Internal server error' } });
+  }
+};
+
+export const updateProfile = async (req, res) => {
+  try {
+    const { bio, phone, program_studi, avatar_url } = req.body;
+    
+    const updatedUser = await prisma.user.update({
+      where: { id: req.user.id },
+      data: { bio, phone, program_studi, avatar_url }
+    });
+
+    res.json({ success: true, message: 'Profile updated', data: { id: updatedUser.id } });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, error: { message: 'Failed to update profile' } });
+  }
+};
+
+export const getLeaderboard = async (req, res) => {
+  try {
+    const topUsers = await prisma.user.findMany({
+      orderBy: { points: 'desc' },
+      take: 10,
+      select: {
+        id: true,
+        full_name: true,
+        points: true,
+        streak_days: true,
+        avatar_url: true
+      }
+    });
+
+    res.json({ success: true, data: topUsers });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, error: { message: 'Failed to fetch leaderboard' } });
   }
 };
