@@ -108,7 +108,7 @@ async function loadClassDetailsAndMaterials(classId) {
     materialContainer.innerHTML = materialHtml;
 
   } catch (error) {
-    document.getElementById('className').innerText = "Gagal memuat detail kelas";
+    document.getElementById('className').innerText = "Failed to load class details";
   }
 }
 
@@ -168,5 +168,105 @@ async function addMaterial(e, classId) {
     }
   } catch (error) {
     alert('Terjadi kesalahan server.');
+  }
+}
+
+// -----------------------------------------
+// QUIZ CREATION LOGIC
+// -----------------------------------------
+let questionCount = 0;
+
+document.addEventListener('DOMContentLoaded', () => {
+  const addQuestionBtn = document.getElementById('addQuestionBtn');
+  if (addQuestionBtn) {
+    addQuestionBtn.addEventListener('click', addQuestionField);
+    addQuestionField(); // Add first question by default
+  }
+
+  const quizForm = document.getElementById('quizForm');
+  if (quizForm) {
+    quizForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const urlParams = new URLSearchParams(window.location.search);
+      const classId = urlParams.get('id');
+      await submitQuiz(classId);
+    });
+  }
+
+  const showQuizBtn = document.getElementById('showQuizFormBtn');
+  if (showQuizBtn) {
+    showQuizBtn.addEventListener('click', () => {
+      const container = document.getElementById('quizFormContainer');
+      container.style.display = container.style.display === 'none' ? 'block' : 'none';
+    });
+  }
+});
+
+function addQuestionField() {
+  questionCount++;
+  const container = document.getElementById('questionsContainer');
+  const div = document.createElement('div');
+  div.style.marginBottom = '24px';
+  div.style.padding = '16px';
+  div.style.backgroundColor = 'white';
+  div.style.border = '1px solid var(--udemy-border)';
+  
+  div.innerHTML = `
+    <div style="font-weight: bold; margin-bottom: 8px;">Question ${questionCount}</div>
+    <div class="form-group">
+      <input type="text" class="form-control q-text" placeholder="Enter question..." required>
+    </div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+      <input type="text" class="form-control q-opt" placeholder="Option A" required>
+      <input type="text" class="form-control q-opt" placeholder="Option B" required>
+      <input type="text" class="form-control q-opt" placeholder="Option C" required>
+      <input type="text" class="form-control q-opt" placeholder="Option D" required>
+    </div>
+    <div class="form-group">
+      <label>Correct Answer (Must exactly match one option above)</label>
+      <input type="text" class="form-control q-correct" placeholder="Type the exact correct option" required>
+    </div>
+  `;
+  container.appendChild(div);
+}
+
+async function submitQuiz(classId) {
+  const title = document.getElementById('quizTitle').value;
+  const questions = [];
+  
+  const questionBlocks = document.getElementById('questionsContainer').children;
+  for (let block of questionBlocks) {
+    const qText = block.querySelector('.q-text').value;
+    const opts = Array.from(block.querySelectorAll('.q-opt')).map(input => input.value);
+    const correct = block.querySelector('.q-correct').value;
+    
+    if (!opts.includes(correct)) {
+      alert(`Correct answer "${correct}" must exactly match one of the options for question: ${qText}`);
+      return;
+    }
+
+    questions.push({
+      question_text: qText,
+      options: opts,
+      correct_answer: correct
+    });
+  }
+
+  try {
+    const res = await fetch('/api/v1/quizzes', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ classId, title, questions })
+    });
+    const json = await res.json();
+    
+    if (json.success) {
+      alert('Quiz created successfully!');
+      window.location.reload();
+    } else {
+      alert(json.error?.message || 'Failed to create quiz');
+    }
+  } catch (err) {
+    alert('Internal server error');
   }
 }

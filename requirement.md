@@ -27,9 +27,9 @@ Sistem ini akan diakses oleh 3 jenis role pengguna:
 - **Manajemen Materi:** Instructor dapat menyuntikkan (insert) tautan materi baru ke spesifik kelas yang mereka kelola.
 - **Monitoring Peserta:** Instructor dapat melihat daftar mahasiswa (NIM & Nama) yang sudah tergabung ke dalam kelas mereka.
 
-### Fase 4: Gamifikasi (Leaderboard & Profil) *[Segera]*
+### Fase 4: Gamifikasi (Leaderboard & Profil) [Selesai]
 - **Sistem Poin & Streak:** Perhitungan keaktifan mahasiswa melalui login harian (streak) dan tugas.
-- **Leaderboard Publik:** Papan peringkat yang menampilkan member dengan poin tertinggi bergaya UI Neo-Brutalism.
+- **Leaderboard Publik:** Papan peringkat yang menampilkan member dengan poin tertinggi bergaya UI modern.
 - **Profil Pengguna:** Halaman untuk mengedit bio, foto avatar, melihat history kelas, dan total poin yang dimiliki.
 
 ## 4. Teknologi (Tech Stack)

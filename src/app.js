@@ -5,6 +5,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import authRoutes from './routes/authRoutes.js';
 import classRoutes from './routes/classRoutes.js';
+import quizRoutes from './routes/quizRoutes.js';
 
 dotenv.config();
 
@@ -24,6 +25,7 @@ app.use(express.static(path.join(__dirname, '../public')));
 // API Routes
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/classes', classRoutes);
+app.use('/api/v1/quizzes', quizRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

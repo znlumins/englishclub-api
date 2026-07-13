@@ -23,10 +23,20 @@
   </div>
 
   <main class="container mt-4 mb-4">
-    <h2 style="font-size: 24px; margin-bottom: 16px;">Course content</h2>
-    <div id="materialList" class="material-list">
-      <!-- Diisi oleh JS -->
-      <p style="padding: 16px;">Loading materials...</p>
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 48px;">
+      <div>
+        <h2 style="font-size: 24px; margin-bottom: 16px;">Course content</h2>
+        <div id="materialList" class="material-list">
+          <!-- Diisi oleh JS -->
+          <p style="padding: 16px;">Loading materials...</p>
+        </div>
+      </div>
+      <div>
+        <h2 style="font-size: 24px; margin-bottom: 16px;">Quizzes & Exams</h2>
+        <div id="quizList" class="material-list">
+          <p style="padding: 16px;">Loading quizzes...</p>
+        </div>
+      </div>
     </div>
   </main>
 
@@ -41,6 +51,7 @@
       const classId = urlParams.get('id');
       if (classId) {
         loadClassDetail(classId);
+        loadClassQuizzes(classId);
       } else {
         document.getElementById('className').innerText = "Class not found";
       }

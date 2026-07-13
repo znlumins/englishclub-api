@@ -55,6 +55,29 @@
         <div id="materialList" class="material-list">
           <p style="padding: 16px; text-align: center; color: var(--udemy-gray-text); background-color: white;">Loading curriculum...</p>
         </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 48px; margin-bottom: 24px;">
+          <h2 style="font-size: 24px;">Quizzes</h2>
+          <button id="showQuizFormBtn" class="btn btn-primary" style="padding: 8px 16px;">+ Add Quiz</button>
+        </div>
+
+        <div id="quizFormContainer" style="display: none; border: 1px solid var(--udemy-border); padding: 24px; margin-bottom: 24px; background-color: var(--udemy-gray-light);">
+          <form id="quizForm">
+            <div class="form-group">
+              <label>Quiz Title</label>
+              <input type="text" id="quizTitle" class="form-control" required placeholder="e.g. Chapter 1 Quiz">
+            </div>
+            
+            <div id="questionsContainer">
+              <!-- Dynamically added questions go here -->
+            </div>
+            
+            <button type="button" id="addQuestionBtn" class="btn btn-secondary" style="margin-bottom: 24px;">+ Add Question</button>
+            <br>
+            <button type="submit" class="btn btn-primary" style="background-color: var(--udemy-purple); width: 100%;">Save Quiz</button>
+          </form>
+        </div>
+
       </div>
 
       <!-- Kolom Siswa -->

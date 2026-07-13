@@ -141,3 +141,46 @@ async function loadClassDetail(classId) {
     document.getElementById('className').innerText = "Failed to load class details";
   }
 }
+
+async function loadClassQuizzes(classId) {
+  try {
+    const res = await fetch(`/api/v1/quizzes/class/${classId}`, { headers });
+    const json = await res.json();
+    
+    if (!json.success) return;
+
+    const quizContainer = document.getElementById('quizList');
+    if (json.data.length === 0) {
+      quizContainer.innerHTML = `<p style="padding: 16px;">No quizzes available.</p>`;
+      return;
+    }
+
+    let quizHtml = '';
+    json.data.forEach((quiz, index) => {
+      let statusHtml = '';
+      if (quiz.attempts && quiz.attempts.length > 0) {
+        statusHtml = `<span style="color: #1A7B5F; font-weight: 700;">Score: ${quiz.attempts[0].score}/100</span>`;
+      } else {
+        statusHtml = `<span style="color: var(--udemy-gray-text);">Not Attempted</span>`;
+      }
+
+      quizHtml += `
+        <a href="/quiz.html?id=${quiz.id}" class="material-item" style="color: var(--udemy-dark);">
+          <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+            <div style="display: flex; align-items: center;">
+              <span class="material-icon">📝</span>
+              <div>
+                <div style="font-size: 16px; font-weight: 700;">Quiz ${index + 1}: ${quiz.title}</div>
+                <div style="font-size: 12px; color: var(--udemy-gray-text); margin-top: 4px;">${quiz._count.questions} Questions</div>
+              </div>
+            </div>
+            <div>${statusHtml}</div>
+          </div>
+        </a>
+      `;
+    });
+    quizContainer.innerHTML = quizHtml;
+  } catch (error) {
+    console.error('Failed to load quizzes');
+  }
+}
