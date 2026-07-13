@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - English Club Vokasi</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="auth-wrapper">
+    <div class="card auth-card">
+      <div class="auth-header">
+        <h1>Welcome Back!</h1>
+        <p>Silakan masuk ke akunmu.</p>
+      </div>
+      
+      <div id="errorMessage" class="error-message"></div>
+      
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="email">Email Kampus</label>
+          <input type="email" id="email" class="form-control" placeholder="nim@vokasi.ac.id" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 16px;">Login</button>
+      </form>
+      
+      <div class="text-center mt-4">
+        <p>Belum punya akun? <a href="/register.html" style="color: var(--jet-black); font-weight: bold;">Daftar di sini</a></p>
+        <p style="margin-top: 8px;"><a href="/" style="color: var(--jet-black);">Kembali ke Beranda</a></p>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/auth.js"></script>
+</body>
+</html>

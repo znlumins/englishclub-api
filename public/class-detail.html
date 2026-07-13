@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detail Kelas - English Club</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <a href="/dashboard.html" class="navbar-brand">English Club</a>
+    <div class="nav-links">
+      <a href="/dashboard.html" class="btn btn-primary" style="border: 4px solid #1A1A1A; box-shadow: 4px 4px 0 0 #1A1A1A;">Dashboard</a>
+    </div>
+  </nav>
+
+  <main class="container mt-4">
+    <div class="card" style="background-color: var(--lime-green);">
+      <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+        <span class="badge badge-yellow">KELAS</span>
+      </div>
+      <h1 id="className" style="font-size: 40px; margin-bottom: 8px;">Memuat...</h1>
+      <p id="classDesc" style="font-size: 18px; margin-bottom: 16px;"></p>
+      <p><strong>Pengajar:</strong> <span id="classInstructor"></span></p>
+    </div>
+
+    <h2 style="margin-top: 32px; margin-bottom: 16px;">Materi Pembelajaran</h2>
+    <div id="materialList" class="material-list">
+      <!-- Diisi oleh JS -->
+      <p>Memuat materi...</p>
+    </div>
+  </main>
+
+  <script src="/js/classes.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!localStorage.getItem('token')) {
+        window.location.href = '/login.html';
+        return;
+      }
+      const urlParams = new URLSearchParams(window.location.search);
+      const classId = urlParams.get('id');
+      if (classId) {
+        loadClassDetail(classId);
+      } else {
+        document.getElementById('className').innerText = "Kelas tidak ditemukan";
+      }
+    });
+  </script>
+</body>
+</html>

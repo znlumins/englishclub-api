@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - English Club Vokasi</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <a href="/dashboard.html" class="navbar-brand">English Club</a>
+    <div class="nav-links">
+      <a href="/classes.html" class="btn btn-secondary" style="border: 4px solid #1A1A1A; box-shadow: 4px 4px 0 0 #1A1A1A;">Cari Kelas</a>
+      <a href="#" id="logoutBtn" class="btn btn-accent" style="border: 4px solid #1A1A1A; box-shadow: 4px 4px 0 0 #1A1A1A;">Logout</a>
+    </div>
+  </nav>
+
+  <main class="container mt-4">
+    <div class="card" style="background-color: var(--primary-yellow);">
+      <h1>Halo, <span id="userName">Member</span>!</h1>
+      <p>Selamat datang di Dashboard. Lanjutkan belajarmu hari ini.</p>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 40px;">
+      <h2>Kelas yang Saya Ikuti</h2>
+      <a href="/classes.html" class="btn btn-secondary">Jelajahi Kelas Lain</a>
+    </div>
+
+    <div id="myClassesGrid" class="class-grid">
+      <!-- Diisi oleh JS -->
+      <p>Sedang memuat data...</p>
+    </div>
+  </main>
+
+  <script src="/js/classes.js"></script>
+  <script>
+    // Inisialisasi Dashboard
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (!user) {
+        window.location.href = '/login.html';
+        return;
+      }
+      document.getElementById('userName').innerText = user.full_name;
+      
+      // Add admin panel button if user is admin or instructor
+      if (user.role === 'admin' || user.role === 'instructor') {
+        const navLinks = document.querySelector('.nav-links');
+        const adminBtn = document.createElement('a');
+        adminBtn.href = '/admin-dashboard.html';
+        adminBtn.className = 'btn btn-primary';
+        adminBtn.style = 'border: 4px solid #1A1A1A; box-shadow: 4px 4px 0 0 #1A1A1A;';
+        adminBtn.innerText = 'Admin Panel';
+        navLinks.insertBefore(adminBtn, document.getElementById('logoutBtn'));
+      }
+
+      document.getElementById('logoutBtn').addEventListener('click', () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/';
+      });
+
+      loadMyClasses();
+    });
+  </script>
+</body>
+</html>

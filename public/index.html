@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>English Club Vokasi LMS</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <nav class="navbar">
+    <a href="/" class="navbar-brand">English Club</a>
+    <div class="nav-links" id="navLinks">
+      <a href="/login.html" class="btn btn-secondary">Login</a>
+      <a href="/register.html" class="btn btn-primary">Daftar Sekarang</a>
+    </div>
+  </nav>
+
+  <main class="container mt-4">
+    <div style="padding: 60px 0; text-align: center;">
+      <h1 style="font-size: 64px; margin-bottom: 20px;">Tingkatkan Kemampuan Bahasa Inggrismu!</h1>
+      <p style="font-size: 20px; max-width: 800px; margin: 0 auto 40px;">
+        Platform pembelajaran digital untuk mahasiswa Vokasi UB. Akses materi, kumpulkan tugas, dan pantau progress
+        belajarmu di satu tempat.
+      </p>
+      <a href="/register.html" class="btn btn-primary" style="font-size: 24px; padding: 16px 32px;">Mulai Belajar</a>
+    </div>
+
+    <div
+      style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 32px; margin-top: 60px;">
+      <div class="card" style="background-color: var(--hot-pink);">
+        <h2>Kelas Terstruktur</h2>
+        <p>Materi pembelajaran yang disusun sistematis untuk meningkatkan skill speaking, listening, reading, dan
+          writing.</p>
+      </div>
+      <div class="card" style="background-color: var(--lime-green);">
+        <h2>Tugas & Quiz Interaktif</h2>
+        <p>Kerjakan tugas langsung di platform dan dapatkan feedback cepat dari mentor.</p>
+      </div>
+      <div class="card" style="background-color: var(--primary-yellow);">
+        <h2>Sertifikat & Gamifikasi</h2>
+        <p>Dapatkan sertifikat penyelesaian dan kumpulkan badge atas setiap pencapaian belajarmu.</p>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Cek jika user sudah login
+    const token = localStorage.getItem('token');
+    if (token) {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const adminBtnHtml = (user.role === 'admin' || user.role === 'instructor') 
+        ? `<a href="/admin-dashboard.html" class="btn btn-secondary">Admin Panel</a>` 
+        : '';
+
+      document.getElementById('navLinks').innerHTML = `
+        ${adminBtnHtml}
+        <a href="/dashboard.html" class="btn btn-primary">Dashboard</a>
+        <button onclick="localStorage.removeItem('token'); window.location.reload();" class="btn btn-accent">Logout</button>
+      `;
+    }
+  </script>
+</body>
+
+</html>

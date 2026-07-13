@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - English Club</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body style="background-color: var(--light-gray);">
+  <nav class="navbar">
+    <a href="/dashboard.html" class="navbar-brand">English Club Admin</a>
+    <div class="nav-links">
+      <a href="/dashboard.html" class="btn btn-secondary" style="border: 4px solid #1A1A1A; box-shadow: 4px 4px 0 0 #1A1A1A;">Back to App</a>
+    </div>
+  </nav>
+
+  <main class="container mt-4">
+    <div class="card" style="background-color: var(--pure-white);">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <h1 style="font-size: 32px;">Manajemen Kelas</h1>
+          <p>Kelola kelas dan materi yang kamu ajar.</p>
+        </div>
+        <button id="showCreateFormBtn" class="btn btn-primary">Buat Kelas Baru</button>
+      </div>
+    </div>
+
+    <!-- Form Create Class (Hidden by default) -->
+    <div id="createClassFormContainer" class="card" style="display: none; background-color: var(--electric-blue); border-width: 4px;">
+      <h2>Form Kelas Baru</h2>
+      <form id="createClassForm" class="mt-4">
+        <div class="form-group">
+          <label>Nama Kelas</label>
+          <input type="text" id="classNameInput" class="form-control" required placeholder="Contoh: Basic English Speaking">
+        </div>
+        <div class="form-group">
+          <label>Deskripsi Kelas</label>
+          <input type="text" id="classDescInput" class="form-control" required placeholder="Penjelasan singkat materi kelas">
+        </div>
+        <button type="submit" class="btn btn-success">Simpan Kelas</button>
+        <button type="button" id="cancelCreateBtn" class="btn btn-secondary" style="margin-left: 12px;">Batal</button>
+      </form>
+    </div>
+
+    <h2 style="margin-top: 32px; margin-bottom: 16px;">Daftar Kelasmu</h2>
+    <div id="managedClassesGrid" class="class-grid">
+      <!-- Diisi oleh JS -->
+      <p>Sedang memuat data...</p>
+    </div>
+  </main>
+
+  <script src="/js/admin.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      checkAdminAccess();
+      loadManagedClasses();
+
+      document.getElementById('showCreateFormBtn').addEventListener('click', () => {
+        document.getElementById('createClassFormContainer').style.display = 'block';
+      });
+      document.getElementById('cancelCreateBtn').addEventListener('click', () => {
+        document.getElementById('createClassFormContainer').style.display = 'none';
+      });
+      
+      document.getElementById('createClassForm').addEventListener('submit', createClass);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  password_hash String
+  nim           String    @unique
+  full_name     String
+  role          String    @default("member") // 'admin', 'mentor', 'member'
+  status        String    @default("pending") // 'pending', 'active', 'blocked'
+  avatar_url    String?
+  bio           String?
+  phone         String?
+  program_studi String?
+  angkatan      Int?
+  points        Int       @default(0)
+  streak_days   Int       @default(0)
+  last_active_at DateTime?
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  classesTaught Class[]      @relation("InstructorClasses")
+  enrollments   Enrollment[]
+}
+
+model Class {
+  id            String    @id @default(uuid())
+  name          String
+  description   String?
+  instructorId  String
+  instructor    User      @relation("InstructorClasses", fields: [instructorId], references: [id])
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+
+  enrollments   Enrollment[]
+  materials     Material[]
+}
+
+model Enrollment {
+  id            String    @id @default(uuid())
+  userId        String
+  classId       String
+  joined_at     DateTime  @default(now())
+
+  user          User      @relation(fields: [userId], references: [id])
+  class         Class     @relation(fields: [classId], references: [id])
+
+  @@unique([userId, classId])
+}
+
+model Material {
+  id            String    @id @default(uuid())
+  classId       String
+  title         String
+  url           String
+  type          String    @default("link") // 'video', 'pdf', 'link'
+  created_at    DateTime  @default(now())
+
+  class         Class     @relation(fields: [classId], references: [id])
+}
