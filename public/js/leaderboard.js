@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!json.success) throw new Error();
 
     if (json.data.length === 0) {
-      container.innerHTML = `<p style="color: white; text-align: center; font-size: 20px;">Belum ada member aktif.</p>`;
+      container.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--udemy-gray-text);">No active members yet.</td></tr>`;
       return;
     }
 
@@ -18,28 +18,24 @@ document.addEventListener('DOMContentLoaded', async () => {
       let rankClass = '';
       let rankTrophy = `#${rank}`;
       
-      if (rank === 1) { rankClass = 'rank-1'; rankTrophy = '🏆 #1'; }
-      else if (rank === 2) { rankClass = 'rank-2'; rankTrophy = '🥈 #2'; }
-      else if (rank === 3) { rankClass = 'rank-3'; rankTrophy = '🥉 #3'; }
+      if (rank === 1) { rankClass = 'rank-1'; rankTrophy = '<span class="trophy">🏆</span> #1'; }
+      else if (rank === 2) { rankClass = 'rank-2'; rankTrophy = '<span class="trophy">🥈</span> #2'; }
+      else if (rank === 3) { rankClass = 'rank-3'; rankTrophy = '<span class="trophy">🥉</span> #3'; }
 
       html += `
-        <div class="rank-item ${rankClass}">
-          <div style="display: flex; align-items: center; gap: 16px;">
-            <div style="font-size: 24px; width: 60px;">${rankTrophy}</div>
-            <div>
-              <span style="font-size: 20px;">${user.full_name}</span>
-              <span class="badge badge-yellow" style="margin-left: 12px; font-size: 12px; border-width: 2px;">🔥 ${user.streak_days || 0} Streak</span>
-            </div>
-          </div>
-          <div style="font-size: 24px;">
-            ${user.points || 0} PTS
-          </div>
-        </div>
+        <tr class="${rankClass}">
+          <td style="font-weight: 700;">${rankTrophy}</td>
+          <td>
+            <div style="font-weight: 700; color: var(--udemy-dark);">${user.full_name}</div>
+          </td>
+          <td>🔥 ${user.streak_days || 0}</td>
+          <td style="text-align: right; font-weight: 700;">${user.points || 0}</td>
+        </tr>
       `;
     });
     
     container.innerHTML = html;
   } catch (error) {
-    container.innerHTML = `<p style="color: red; background: white; padding: 16px; border: 4px solid black; font-weight: bold; text-align: center;">Gagal memuat papan peringkat.</p>`;
+    container.innerHTML = `<tr><td colspan="4" style="color: red; text-align: center;">Failed to load leaderboard.</td></tr>`;
   }
 });

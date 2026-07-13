@@ -23,17 +23,19 @@ async function loadMyClasses() {
     let html = '';
     json.data.forEach(cls => {
       html += `
-        <div class="card">
-          <span class="badge badge-pink" style="margin-bottom: 8px;">KELAS</span>
-          <h3>${cls.name}</h3>
-          <p style="margin-bottom: 16px;">Pengajar: ${cls.instructor.full_name}</p>
-          <a href="/class-detail.html?id=${cls.id}" class="btn btn-primary" style="width: 100%; text-align: center;">Masuk Kelas</a>
-        </div>
+        <a href="/class-detail.html?id=${cls.id}" class="course-card">
+          <img class="course-card-img" src="https://via.placeholder.com/400x225/E2E8F0/1C1D1F?text=${encodeURIComponent(cls.name)}" alt="Course">
+          <div class="course-card-body">
+            <div class="course-card-title">${cls.name}</div>
+            <div class="course-card-instructor">${cls.instructor.full_name}</div>
+            <div class="course-card-metrics">View Course</div>
+          </div>
+        </a>
       `;
     });
     container.innerHTML = html;
   } catch (error) {
-    container.innerHTML = `<p style="color: red;">Gagal memuat kelas.</p>`;
+    container.innerHTML = `<p style="color: red;">Failed to load courses.</p>`;
   }
 }
 
@@ -49,20 +51,22 @@ async function loadAllClasses() {
     if (!json.success) throw new Error(json.error?.message);
 
     if (json.data.length === 0) {
-      container.innerHTML = `<p>Belum ada kelas yang tersedia.</p>`;
+      container.innerHTML = `<p>No courses available.</p>`;
       return;
     }
 
     let html = '';
     json.data.forEach(cls => {
       html += `
-        <div class="card">
-          <span class="badge badge-blue" style="margin-bottom: 8px;">TERSEDIA</span>
-          <h3>${cls.name}</h3>
-          <p style="margin-bottom: 8px;">${cls.description || 'Tidak ada deskripsi'}</p>
-          <p style="margin-bottom: 16px; font-size: 14px;">Pengajar: ${cls.instructor.full_name}</p>
-          <p style="margin-bottom: 16px; font-size: 14px;"><strong>${cls._count.enrollments}</strong> member telah bergabung</p>
-          <button onclick="enrollClass('${cls.id}')" class="btn btn-success" style="width: 100%;">Daftar Kelas</button>
+        <div class="course-card">
+          <img class="course-card-img" src="https://via.placeholder.com/400x225/E2E8F0/1C1D1F?text=${encodeURIComponent(cls.name)}" alt="Course">
+          <div class="course-card-body">
+            <div class="course-card-title">${cls.name}</div>
+            <div class="course-card-instructor" style="margin-bottom: 4px;">${cls.description || 'No description'}</div>
+            <div class="course-card-instructor">${cls.instructor.full_name}</div>
+            <div class="course-card-metrics" style="margin-bottom: 12px; font-weight: normal;">${cls._count.enrollments} students enrolled</div>
+            <button onclick="enrollClass('${cls.id}')" class="btn btn-primary" style="width: 100%; margin-top: auto;">Enroll Now</button>
+          </div>
         </div>
       `;
     });
@@ -104,12 +108,12 @@ async function loadClassDetail(classId) {
 
     const cls = json.data;
     document.getElementById('className').innerText = cls.name;
-    document.getElementById('classDesc').innerText = cls.description || 'Tidak ada deskripsi';
+    document.getElementById('classDesc').innerText = cls.description || 'No description provided.';
     document.getElementById('classInstructor').innerText = cls.instructor.full_name;
 
     const materialContainer = document.getElementById('materialList');
     if (cls.materials.length === 0) {
-      materialContainer.innerHTML = `<p>Belum ada materi untuk kelas ini.</p>`;
+      materialContainer.innerHTML = `<p style="padding: 16px;">No materials available yet.</p>`;
       return;
     }
 
@@ -120,21 +124,20 @@ async function loadClassDetail(classId) {
       else if (mat.type === 'link') icon = '🔗';
 
       materialHtml += `
-        <div class="material-item">
-          <div style="display: flex; align-items: center; gap: 12px;">
-            <span style="font-size: 24px;">${icon}</span>
+        <a href="${mat.url}" target="_blank" class="material-item" style="color: var(--udemy-dark);">
+          <div style="display: flex; align-items: center;">
+            <span class="material-icon">${icon}</span>
             <div>
-              <h3 style="font-size: 18px; margin-bottom: 4px;">Materi ${index + 1}: ${mat.title}</h3>
-              <span class="badge badge-pink">${mat.type}</span>
+              <div style="font-size: 16px; font-weight: 700;">Section ${index + 1}: ${mat.title}</div>
+              <div style="font-size: 12px; color: var(--udemy-gray-text); margin-top: 4px;">${mat.type.toUpperCase()}</div>
             </div>
           </div>
-          <a href="${mat.url}" target="_blank" class="btn btn-primary">Buka Materi</a>
-        </div>
+        </a>
       `;
     });
     materialContainer.innerHTML = materialHtml;
 
   } catch (error) {
-    document.getElementById('className').innerText = "Gagal memuat detail kelas";
+    document.getElementById('className').innerText = "Failed to load class details";
   }
 }

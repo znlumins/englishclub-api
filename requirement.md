@@ -1,7 +1,7 @@
 # Requirement Spesification: Learning Management System (LMS) - English Club Vokasi UB
 
 ## 1. Pendahuluan
-Dokumen ini berisi daftar spesifikasi kebutuhan (requirements) untuk pengembangan platform Learning Management System (LMS) yang dikhususkan bagi anggota English Club di Vokasi Universitas Brawijaya (UB). Platform ini dibangun dengan konsep **Neo-Brutalism Design** untuk UI/UX-nya dan akan mengakomodasi kebutuhan manajemen kelas, materi, serta leaderboard (gamifikasi).
+Dokumen ini berisi daftar spesifikasi kebutuhan (requirements) untuk pengembangan platform Learning Management System (LMS) yang dikhususkan bagi anggota English Club di Vokasi Universitas Brawijaya (UB). Platform ini dibangun dengan konsep **Udemy-Like Modern UI** untuk antarmukanya dan akan mengakomodasi kebutuhan manajemen kelas, materi, serta leaderboard (gamifikasi).
 
 ## 2. Aktor / Pengguna Sistem
 Sistem ini akan diakses oleh 3 jenis role pengguna:
@@ -33,7 +33,7 @@ Sistem ini akan diakses oleh 3 jenis role pengguna:
 - **Profil Pengguna:** Halaman untuk mengedit bio, foto avatar, melihat history kelas, dan total poin yang dimiliki.
 
 ## 4. Teknologi (Tech Stack)
-- **Frontend:** HTML5, Vanilla JavaScript, Custom CSS (Neo-Brutalism Guidelines: Bold borders, solid drop shadows, high contrast colors).
+- **Frontend:** HTML5, Vanilla JavaScript, Custom CSS (Udemy-like design, modern, sleek, minimal).
 - **Backend:** Node.js (ES Modules), Express.js.
 - **Database:** SQLite.
 - **ORM:** Prisma Client (v5.x).

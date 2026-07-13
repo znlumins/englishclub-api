@@ -3,64 +3,42 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Register - English Club Vokasi</title>
+  <title>Register - English Club</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
-<body style="background-color: var(--hot-pink);">
-  <div class="auth-wrapper" style="background-color: var(--hot-pink);">
-    <div class="card auth-card" style="max-width: 600px;">
-      <div class="auth-header">
-        <h1>Bergabung Sekarang!</h1>
-        <p>Daftar untuk menjadi member English Club Vokasi.</p>
+<body style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background-color: var(--udemy-gray-light);">
+  
+  <div class="auth-container" style="width: 100%;">
+    <div style="text-align: center; margin-bottom: 24px;">
+      <h1 class="navbar-brand">English Club</h1>
+    </div>
+    <div class="auth-title" style="text-align: center; font-size: 16px; border: none; margin-bottom: 16px;">Sign up and start learning</div>
+    
+    <div id="errorMsg" class="error-message"></div>
+    <div id="successMsg" class="success-message"></div>
+    
+    <form id="registerForm">
+      <div class="form-group">
+        <label>Nama Lengkap</label>
+        <input type="text" id="fullName" class="form-control" required placeholder="Full Name">
       </div>
-      
-      <div id="errorMessage" class="error-message"></div>
-      <div id="successMessage" class="success-message"></div>
-      
-      <form id="registerForm">
-        <div class="form-group">
-          <label for="full_name">Nama Lengkap</label>
-          <input type="text" id="full_name" class="form-control" required>
-        </div>
-        
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-          <div class="form-group">
-            <label for="nim">NIM</label>
-            <input type="text" id="nim" class="form-control" required>
-          </div>
-          <div class="form-group">
-            <label for="email">Email Kampus</label>
-            <input type="email" id="email" class="form-control" placeholder="nim@vokasi.ac.id" required>
-          </div>
-        </div>
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-          <div class="form-group">
-            <label for="program_studi">Program Studi</label>
-            <input type="text" id="program_studi" class="form-control" required>
-          </div>
-          <div class="form-group">
-            <label for="angkatan">Angkatan (Tahun)</label>
-            <input type="number" id="angkatan" class="form-control" placeholder="2023" required>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="phone">Nomor WhatsApp</label>
-          <input type="text" id="phone" class="form-control">
-        </div>
-        
-        <div class="form-group">
-          <label for="password">Password</label>
-          <input type="password" id="password" class="form-control" required minlength="8">
-        </div>
-        
-        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 16px;">Daftar</button>
-      </form>
-      
-      <div class="text-center mt-4">
-        <p>Sudah punya akun? <a href="/login.html" style="color: var(--jet-black); font-weight: bold;">Login di sini</a></p>
+      <div class="form-group">
+        <label>NIM</label>
+        <input type="text" id="nim" class="form-control" required placeholder="NIM">
       </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="email" class="form-control" required placeholder="name@vokasi.ac.id">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="password" class="form-control" required placeholder="Create password">
+      </div>
+      <button type="submit" class="btn btn-primary" style="width: 100%; padding: 14px;">Sign up</button>
+    </form>
+
+    <div style="margin-top: 24px; text-align: center; font-size: 14px; color: var(--udemy-gray-text);">
+      Already have an account? <a href="/login.html" style="font-weight: 700; text-decoration: underline;">Log in</a>
     </div>
   </div>
 

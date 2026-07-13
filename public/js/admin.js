@@ -30,21 +30,19 @@ async function loadManagedClasses() {
     let html = '';
     json.data.forEach(cls => {
       html += `
-        <div class="card">
-          <span class="badge badge-yellow" style="margin-bottom: 8px;">Milikmu</span>
-          <h3>${cls.name}</h3>
-          <p style="margin-bottom: 8px;">${cls.description || 'Tidak ada deskripsi'}</p>
-          <div style="display: flex; gap: 12px; margin-bottom: 16px; font-size: 14px;">
-            <span>👥 ${cls._count.enrollments} Siswa</span>
-            <span>📚 ${cls._count.materials} Materi</span>
+        <a href="/admin-class.html?id=${cls.id}" class="course-card">
+          <img class="course-card-img" src="https://via.placeholder.com/400x225/E2E8F0/1C1D1F?text=${encodeURIComponent(cls.name)}" alt="Course">
+          <div class="course-card-body">
+            <div class="course-card-title">${cls.name}</div>
+            <div class="course-card-instructor" style="margin-bottom: 4px;">${cls.description || 'No description'}</div>
+            <div class="course-card-metrics">Manage Course &middot; ${cls._count.enrollments} Students</div>
           </div>
-          <a href="/admin-class.html?id=${cls.id}" class="btn btn-primary" style="width: 100%; text-align: center;">Kelola Kelas</a>
-        </div>
+        </a>
       `;
     });
     container.innerHTML = html;
   } catch (error) {
-    container.innerHTML = `<p style="color: red;">Gagal memuat kelas.</p>`;
+    container.innerHTML = `<p style="color: red;">Failed to load courses.</p>`;
   }
 }
 
@@ -96,16 +94,15 @@ async function loadClassDetailsAndMaterials(classId) {
       else if (mat.type === 'link') icon = '🔗';
 
       materialHtml += `
-        <div class="material-item">
-          <div style="display: flex; align-items: center; gap: 12px;">
-            <span style="font-size: 24px;">${icon}</span>
+        <a href="${mat.url}" target="_blank" class="material-item" style="color: var(--udemy-dark);">
+          <div style="display: flex; align-items: center;">
+            <span class="material-icon">${icon}</span>
             <div>
-              <h3 style="font-size: 16px; margin-bottom: 4px;">${index + 1}. ${mat.title}</h3>
-              <span class="badge badge-pink" style="font-size: 12px;">${mat.type}</span>
+              <div style="font-size: 16px; font-weight: 700;">Section ${index + 1}: ${mat.title}</div>
+              <div style="font-size: 12px; color: var(--udemy-gray-text); margin-top: 4px;">${mat.type.toUpperCase()}</div>
             </div>
           </div>
-          <a href="${mat.url}" target="_blank" class="btn btn-secondary" style="padding: 6px 12px; font-size: 14px;">Buka</a>
-        </div>
+        </a>
       `;
     });
     materialContainer.innerHTML = materialHtml;
