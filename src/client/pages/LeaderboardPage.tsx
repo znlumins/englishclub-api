@@ -19,8 +19,8 @@ import PageLoader from '../components/PageLoader';
 import EmptyState from '../components/EmptyState';
 
 const RANK_COLOR: Record<number, string> = {
-  1: '#D97706',
-  2: '#64748B',
+  1: '#EAB308',
+  2: '#94A3B8',
   3: '#B45309',
 };
 
@@ -52,7 +52,7 @@ export default function LeaderboardPage() {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell width={64}>Rank</TableCell>
+                  <TableCell width={64} align="center">Rank</TableCell>
                   <TableCell>Member</TableCell>
                   <TableCell align="right">Streak</TableCell>
                   <TableCell align="right">Poin</TableCell>
@@ -63,7 +63,7 @@ export default function LeaderboardPage() {
                   const rank = idx + 1;
                   return (
                     <TableRow key={entry.id} hover>
-                      <TableCell>
+                      <TableCell align="center">
                         {rank <= 3 ? (
                           <WorkspacePremiumIcon sx={{ color: RANK_COLOR[rank] }} />
                         ) : (
