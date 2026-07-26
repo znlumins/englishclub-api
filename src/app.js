@@ -30,6 +30,9 @@ const clientDist = path.join(__dirname, '../dist/client');
 // Serve built React (Vite) SPA assets
 app.use(express.static(clientDist));
 
+// Health check endpoint untuk keep-alive service
+app.get('/health', (req, res) => res.status(200).json({ status: 'ok', uptime: process.uptime() }));
+
 // API Routes
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/classes', classRoutes);
