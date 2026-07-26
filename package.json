@@ -8,6 +8,8 @@
     "dev": "nodemon src/app.js",
     "dev:client": "vite",
     "build:client": "vite build",
+    "build": "npm run build:client && prisma generate",
+    "start": "prisma db push && node src/app.js",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [],
