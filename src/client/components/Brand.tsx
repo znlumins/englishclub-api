@@ -17,7 +17,7 @@ export default function Brand({ size = 36, showWordmark = true }: BrandProps) {
         sx={{ width: size, height: size, objectFit: 'contain', flexShrink: 0 }}
       />
       {showWordmark && (
-        <Typography variant="h4" sx={{ fontWeight: 800, color: 'primary.main' }}>
+        <Typography variant="h4" sx={{ fontWeight: 800 }}>
           English Club
         </Typography>
       )}
