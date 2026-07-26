@@ -26,9 +26,9 @@ const theme = createTheme({
       default: SURFACE_ALT,
       paper: '#FFFFFF',
     },
-    success: { main: '#16A34A' },
-    error: { main: '#DC2626' },
-    warning: { main: '#D97706' },
+    success: { main: '#16A34A', light: '#F0FDF4' },
+    error: { main: '#DC2626', light: '#FEF2F2' },
+    warning: { main: '#D97706', light: '#FFFBEB' },
   },
   typography: {
     fontFamily: ['Inter', '-apple-system', 'Segoe UI', 'Helvetica Neue', 'Arial', 'sans-serif'].join(','),
