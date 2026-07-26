@@ -10,6 +10,7 @@ import StarIcon from '@mui/icons-material/Star';
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import AddIcon from '@mui/icons-material/Add';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../api/client';
 import type { ClassSummary, UserDTO } from '../api/types';
@@ -39,9 +40,14 @@ export default function DashboardPage() {
       </Typography>
 
       <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' }, mb: 5 }}>
-        <StatCard icon={<StarIcon />} label="Total Poin" value={user?.points ?? 0} />
-        <StatCard icon={<LocalFireDepartmentIcon />} label="Streak Harian" value={`${user?.streak_days ?? 0} hari`} />
-        <StatCard icon={<MenuBookIcon />} label="Kelas Diikuti" value={myClasses?.length ?? 0} />
+        <StatCard icon={<StarIcon />} label="Total Poin" value={user?.points ?? 0} accent="primary" />
+        <StatCard
+          icon={<LocalFireDepartmentIcon />}
+          label="Streak Harian"
+          value={`${user?.streak_days ?? 0} hari`}
+          accent="warning"
+        />
+        <StatCard icon={<MenuBookIcon />} label="Kelas Diikuti" value={myClasses?.length ?? 0} accent="success" />
       </Box>
 
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
@@ -82,6 +88,47 @@ export default function DashboardPage() {
               </CardActionArea>
             </Card>
           ))}
+          <Card
+            variant="outlined"
+            sx={{
+              borderStyle: 'dashed',
+              borderColor: 'divider',
+              boxShadow: 'none',
+              bgcolor: 'transparent',
+            }}
+          >
+            <CardActionArea
+              component={RouterLink}
+              to="/classes"
+              sx={{
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                p: 3,
+                gap: 1,
+                color: 'text.secondary',
+              }}
+            >
+              <Box
+                sx={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: '50%',
+                  bgcolor: 'background.default',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <AddIcon />
+              </Box>
+              <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                Jelajahi Kelas Lain
+              </Typography>
+            </CardActionArea>
+          </Card>
         </Box>
       )}
     </Box>

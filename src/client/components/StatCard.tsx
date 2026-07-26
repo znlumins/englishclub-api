@@ -4,13 +4,16 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import type { ReactNode } from 'react';
 
+type StatCardAccent = 'primary' | 'success' | 'warning';
+
 interface StatCardProps {
   icon: ReactNode;
   label: string;
   value: string | number;
+  accent?: StatCardAccent;
 }
 
-export default function StatCard({ icon, label, value }: StatCardProps) {
+export default function StatCard({ icon, label, value, accent = 'primary' }: StatCardProps) {
   return (
     <Card>
       <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 3 }}>
@@ -19,8 +22,8 @@ export default function StatCard({ icon, label, value }: StatCardProps) {
             width: 48,
             height: 48,
             borderRadius: 2,
-            bgcolor: 'primary.light',
-            color: 'primary.main',
+            bgcolor: `${accent}.light`,
+            color: `${accent}.main`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
