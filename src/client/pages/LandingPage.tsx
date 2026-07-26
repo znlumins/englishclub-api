@@ -11,6 +11,10 @@ import CardContent from '@mui/material/CardContent';
 import HowToRegIcon from '@mui/icons-material/HowToReg';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import OndemandVideoIcon from '@mui/icons-material/OndemandVideo';
+import QuizIcon from '@mui/icons-material/Quiz';
+import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
+import GroupsIcon from '@mui/icons-material/Groups';
 import Brand from '../components/Brand';
 
 const STEPS = [
@@ -28,6 +32,29 @@ const STEPS = [
     icon: <EmojiEventsIcon fontSize="large" color="primary" />,
     title: 'Kumpulkan Poin',
     description: 'Login harian, enroll, dan kuis memberi poin — pantau posisimu di leaderboard.',
+  },
+];
+
+const BENEFITS = [
+  {
+    icon: <OndemandVideoIcon />,
+    title: 'Materi Fleksibel',
+    description: 'Akses materi berupa dokumen, video, dan tautan langsung dari instruktur, kapan saja.',
+  },
+  {
+    icon: <QuizIcon />,
+    title: 'Kuis & Penilaian Otomatis',
+    description: 'Uji pemahamanmu lewat kuis interaktif dengan skor yang dihitung otomatis.',
+  },
+  {
+    icon: <WorkspacePremiumIcon />,
+    title: 'Gamifikasi & Poin',
+    description: 'Kumpulkan poin dari keaktifan harian, enroll kelas, dan kuis — pantau progresmu.',
+  },
+  {
+    icon: <GroupsIcon />,
+    title: 'Leaderboard Komunitas',
+    description: 'Bersaing sehat dengan member lain dan lihat peringkatmu secara real-time.',
   },
 ];
 
@@ -103,6 +130,95 @@ export default function LandingPage() {
           ))}
         </Box>
       </Container>
+
+      <Box sx={{ bgcolor: 'background.default', borderTop: '1px solid', borderColor: 'divider' }}>
+        <Container maxWidth="lg" sx={{ py: { xs: 8, md: 10 } }}>
+          <Typography variant="overline" sx={{ display: 'block', textAlign: 'center' }}>
+            Kenapa Gabung
+          </Typography>
+          <Typography variant="h2" sx={{ textAlign: 'center', mb: 6 }}>
+            Semua yang Kamu Butuhkan untuk Belajar
+          </Typography>
+          <Box
+            sx={{
+              display: 'grid',
+              gap: 3,
+              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
+            }}
+          >
+            {BENEFITS.map((benefit) => (
+              <Box key={benefit.title}>
+                <Box
+                  sx={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: 2,
+                    bgcolor: 'primary.light',
+                    color: 'primary.main',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    mb: 2,
+                  }}
+                >
+                  {benefit.icon}
+                </Box>
+                <Typography variant="h4" sx={{ mb: 1 }}>
+                  {benefit.title}
+                </Typography>
+                <Typography variant="body2">{benefit.description}</Typography>
+              </Box>
+            ))}
+          </Box>
+        </Container>
+      </Box>
+
+      <Box
+        sx={{
+          position: 'relative',
+          overflow: 'hidden',
+          background: 'linear-gradient(135deg, #4F46E5 0%, #4338CA 100%)',
+          py: { xs: 8, md: 10 },
+        }}
+      >
+        <Container maxWidth="sm" sx={{ textAlign: 'center' }}>
+          <Typography variant="h2" sx={{ color: '#FFFFFF', mb: 2 }}>
+            Siap Mulai Belajar Hari Ini?
+          </Typography>
+          <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.85)', mb: 4 }}>
+            Daftar sekarang, tunggu persetujuan admin, dan langsung akses kelas serta materi bahasa
+            Inggris pilihan.
+          </Typography>
+          <Button
+            component={RouterLink}
+            to="/register"
+            variant="contained"
+            size="large"
+            sx={{ bgcolor: '#FFFFFF', color: 'primary.main', '&:hover': { bgcolor: '#EEF2FF' } }}
+          >
+            Daftar Sekarang
+          </Button>
+        </Container>
+      </Box>
+
+      <Box component="footer" sx={{ borderTop: '1px solid', borderColor: 'divider' }}>
+        <Container
+          maxWidth="lg"
+          sx={{
+            py: 4,
+            display: 'flex',
+            flexDirection: { xs: 'column', sm: 'row' },
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 2,
+          }}
+        >
+          <Brand size={28} />
+          <Typography variant="body2">
+            © {new Date().getFullYear()} English Club Vokasi UB. Seluruh hak cipta dilindungi.
+          </Typography>
+        </Container>
+      </Box>
     </Box>
   );
 }
