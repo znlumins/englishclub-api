@@ -9,7 +9,6 @@ import Button from '@mui/material/Button';
 import StarIcon from '@mui/icons-material/Star';
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import AddIcon from '@mui/icons-material/Add';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../api/client';
@@ -50,12 +49,9 @@ export default function DashboardPage() {
         <StatCard icon={<MenuBookIcon />} label="Kelas Diikuti" value={myClasses?.length ?? 0} accent="success" />
       </Box>
 
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h3">Kelas Saya</Typography>
-        <Button component={RouterLink} to="/classes" endIcon={<ArrowForwardIcon />}>
-          Jelajahi Katalog
-        </Button>
-      </Box>
+      <Typography variant="h3" sx={{ mb: 2 }}>
+        Kelas Saya
+      </Typography>
 
       {myClasses === null && <PageLoader />}
 
