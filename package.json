@@ -11,7 +11,7 @@
     "dev": "nodemon src/app.js",
     "dev:client": "vite",
     "build:client": "vite build",
-    "build": "DATABASE_URL=\"postgresql://user:pass@localhost:5432/db\" npx prisma generate && npm run build:client",
+    "build": "npx prisma generate && npx vite build",
     "start": "npx prisma db push && node src/app.js",
     "typecheck": "tsc --noEmit"
   },
