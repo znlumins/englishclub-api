@@ -33,6 +33,13 @@ export default function LoginPage() {
     <AuthLayout
       eyebrow="Selamat Datang"
       title="Masuk ke Akunmu"
+      panelTitle="Lanjutkan Belajar Bahasa Inggrismu"
+      panelDescription="Masuk untuk akses kelas, materi, dan kuis yang sudah kamu ikuti — sekaligus pantau progres poinmu."
+      panelHighlights={[
+        'Akses materi kapan saja',
+        'Kerjakan kuis & lihat skor otomatis',
+        'Pantau peringkatmu di leaderboard',
+      ]}
       footer={
         <Typography variant="body2">
           Belum punya akun?{' '}

@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
@@ -43,6 +44,13 @@ export default function RegisterPage() {
     <AuthLayout
       eyebrow="Gabung Sekarang"
       title="Buat Akun Baru"
+      panelTitle="Satu Langkah Menuju Kelas Impianmu"
+      panelDescription="Daftar sekarang, tunggu persetujuan admin, dan mulai belajar bersama English Club Vokasi UB."
+      panelHighlights={[
+        'Materi fleksibel: dokumen, video, tautan',
+        'Kuis interaktif dengan penilaian otomatis',
+        'Kumpulkan poin & bersaing di leaderboard',
+      ]}
       footer={
         <Typography variant="body2">
           Sudah punya akun?{' '}
@@ -53,14 +61,16 @@ export default function RegisterPage() {
       }
     >
       <Stack component="form" spacing={2.5} onSubmit={handleSubmit}>
-        <TextField
-          label="Nama Lengkap"
-          value={fullName}
-          onChange={(e) => setFullName(e.target.value)}
-          required
-          fullWidth
-        />
-        <TextField label="NIM" value={nim} onChange={(e) => setNim(e.target.value)} required fullWidth />
+        <Box sx={{ display: 'grid', gap: 2.5, gridTemplateColumns: { xs: '1fr', sm: '1.4fr 1fr' } }}>
+          <TextField
+            label="Nama Lengkap"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            required
+            fullWidth
+          />
+          <TextField label="NIM" value={nim} onChange={(e) => setNim(e.target.value)} required fullWidth />
+        </Box>
         <TextField
           label="Email"
           type="email"
