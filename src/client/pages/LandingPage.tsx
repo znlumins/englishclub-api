@@ -8,9 +8,6 @@ import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import HowToRegIcon from '@mui/icons-material/HowToReg';
-import MenuBookIcon from '@mui/icons-material/MenuBook';
-import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import OndemandVideoIcon from '@mui/icons-material/OndemandVideo';
 import QuizIcon from '@mui/icons-material/Quiz';
 import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
@@ -25,23 +22,25 @@ const CARD_HOVER_SX = {
 
 const STEPS = [
   {
-    icon: <HowToRegIcon fontSize="large" color="primary" />,
     title: 'Daftar & Disetujui',
     description: 'Buat akun dengan NIM & email kampus, lalu tunggu persetujuan admin English Club.',
   },
   {
-    icon: <MenuBookIcon fontSize="large" color="primary" />,
     title: 'Ikut Kelas & Materi',
     description: 'Enroll ke kelas yang tersedia, akses materi, dan kerjakan kuis untuk menguji pemahaman.',
   },
   {
-    icon: <EmojiEventsIcon fontSize="large" color="primary" />,
     title: 'Kumpulkan Poin',
     description: 'Login harian, enroll, dan kuis memberi poin — pantau posisimu di leaderboard.',
   },
 ];
 
 const BENEFITS = [
+  {
+    icon: <WorkspacePremiumIcon />,
+    title: 'Gamifikasi & Poin',
+    description: 'Kumpulkan poin dari keaktifan harian, enroll kelas, dan kuis — pantau progresmu.',
+  },
   {
     icon: <OndemandVideoIcon />,
     title: 'Materi Fleksibel',
@@ -53,16 +52,13 @@ const BENEFITS = [
     description: 'Uji pemahamanmu lewat kuis interaktif dengan skor yang dihitung otomatis.',
   },
   {
-    icon: <WorkspacePremiumIcon />,
-    title: 'Gamifikasi & Poin',
-    description: 'Kumpulkan poin dari keaktifan harian, enroll kelas, dan kuis — pantau progresmu.',
-  },
-  {
     icon: <GroupsIcon />,
     title: 'Leaderboard Komunitas',
     description: 'Bersaing sehat dengan member lain dan lihat peringkatmu secara real-time.',
   },
 ];
+
+const [FEATURED_BENEFIT, ...OTHER_BENEFITS] = BENEFITS;
 
 export default function LandingPage() {
   return (
@@ -124,27 +120,57 @@ export default function LandingPage() {
         <Typography variant="overline" sx={{ display: 'block', textAlign: 'center' }}>
           Cara Kerja
         </Typography>
-        <Typography variant="h2" sx={{ textAlign: 'center', mb: 6 }}>
+        <Typography variant="h2" sx={{ textAlign: 'center', mb: 8 }}>
           Tiga Langkah Sederhana
         </Typography>
-        <Box
-          sx={{
-            display: 'grid',
-            gap: 3,
-            gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
-          }}
-        >
-          {STEPS.map((step) => (
-            <Card key={step.title} sx={CARD_HOVER_SX}>
-              <CardContent sx={{ p: 4 }}>
-                {step.icon}
-                <Typography variant="h4" sx={{ mt: 2, mb: 1 }}>
+        <Box sx={{ position: 'relative' }}>
+          <Box
+            sx={{
+              display: { xs: 'none', md: 'block' },
+              position: 'absolute',
+              top: 28,
+              left: 'calc(100% / 6)',
+              right: 'calc(100% / 6)',
+              height: 2,
+              bgcolor: 'divider',
+            }}
+          />
+          <Box
+            sx={{
+              display: 'grid',
+              gap: { xs: 5, md: 3 },
+              gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
+              position: 'relative',
+            }}
+          >
+            {STEPS.map((step, index) => (
+              <Box key={step.title} sx={{ textAlign: { xs: 'left', md: 'center' } }}>
+                <Box
+                  sx={{
+                    width: 56,
+                    height: 56,
+                    borderRadius: '50%',
+                    bgcolor: 'primary.main',
+                    color: '#FFFFFF',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '1.25rem',
+                    fontWeight: 800,
+                    mx: { xs: 0, md: 'auto' },
+                    mb: 3,
+                    boxShadow: '0 8px 24px rgba(79,70,229,.25)',
+                  }}
+                >
+                  {`0${index + 1}`}
+                </Box>
+                <Typography variant="h4" sx={{ mb: 1 }}>
                   {step.title}
                 </Typography>
                 <Typography variant="body2">{step.description}</Typography>
-              </CardContent>
-            </Card>
-          ))}
+              </Box>
+            ))}
+          </Box>
         </Box>
       </Container>
 
@@ -156,14 +182,56 @@ export default function LandingPage() {
           <Typography variant="h2" sx={{ textAlign: 'center', mb: 6 }}>
             Semua yang Kamu Butuhkan untuk Belajar
           </Typography>
+          <Card
+            sx={{
+              ...CARD_HOVER_SX,
+              mb: 3,
+              background: 'linear-gradient(135deg, #4F46E5 0%, #4338CA 100%)',
+            }}
+          >
+            <CardContent
+              sx={{
+                p: { xs: 4, md: 5 },
+                display: 'flex',
+                flexDirection: { xs: 'column', md: 'row' },
+                alignItems: { md: 'center' },
+                gap: 3,
+              }}
+            >
+              <Box
+                sx={{
+                  width: 64,
+                  height: 64,
+                  borderRadius: 2,
+                  bgcolor: 'rgba(255,255,255,0.15)',
+                  color: '#FFFFFF',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  '& svg': { fontSize: 32 },
+                }}
+              >
+                {FEATURED_BENEFIT.icon}
+              </Box>
+              <Box>
+                <Typography variant="h3" sx={{ color: '#FFFFFF', mb: 1 }}>
+                  {FEATURED_BENEFIT.title}
+                </Typography>
+                <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.85)' }}>
+                  {FEATURED_BENEFIT.description}
+                </Typography>
+              </Box>
+            </CardContent>
+          </Card>
           <Box
             sx={{
               display: 'grid',
               gap: 3,
-              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
+              gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' },
             }}
           >
-            {BENEFITS.map((benefit) => (
+            {OTHER_BENEFITS.map((benefit) => (
               <Card key={benefit.title} sx={CARD_HOVER_SX}>
                 <CardContent sx={{ p: 3 }}>
                   <Box
