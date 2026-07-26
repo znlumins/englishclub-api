@@ -16,6 +16,12 @@ import QuizIcon from '@mui/icons-material/Quiz';
 import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 import GroupsIcon from '@mui/icons-material/Groups';
 import Brand from '../components/Brand';
+import SkillTicker from '../components/SkillTicker';
+
+const CARD_HOVER_SX = {
+  transition: 'transform 200ms ease-out, box-shadow 200ms ease-out',
+  '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 8px 24px rgba(15,23,42,.08)' },
+};
 
 const STEPS = [
   {
@@ -85,7 +91,16 @@ export default function LandingPage() {
       >
         <Container maxWidth="md" sx={{ textAlign: 'center', position: 'relative' }}>
           <Typography variant="overline">English Club Vokasi UB</Typography>
-          <Typography variant="h1" sx={{ fontSize: { xs: '2.25rem', md: '3rem' }, mt: 1, mb: 2 }}>
+          <Typography
+            variant="h1"
+            sx={{
+              fontSize: { xs: '2.75rem', sm: '3.75rem', md: '4.75rem' },
+              lineHeight: { xs: 1.1, md: 1.02 },
+              letterSpacing: '-0.03em',
+              mt: 1,
+              mb: 2,
+            }}
+          >
             Tingkatkan Kemampuan Bahasa Inggrismu
           </Typography>
           <Typography variant="body1" sx={{ color: 'text.secondary', maxWidth: 560, mx: 'auto', mb: 4 }}>
@@ -103,6 +118,8 @@ export default function LandingPage() {
         </Container>
       </Box>
 
+      <SkillTicker />
+
       <Container maxWidth="lg" sx={{ py: { xs: 8, md: 10 } }}>
         <Typography variant="overline" sx={{ display: 'block', textAlign: 'center' }}>
           Cara Kerja
@@ -118,7 +135,7 @@ export default function LandingPage() {
           }}
         >
           {STEPS.map((step) => (
-            <Card key={step.title}>
+            <Card key={step.title} sx={CARD_HOVER_SX}>
               <CardContent sx={{ p: 4 }}>
                 {step.icon}
                 <Typography variant="h4" sx={{ mt: 2, mb: 1 }}>
@@ -147,27 +164,29 @@ export default function LandingPage() {
             }}
           >
             {BENEFITS.map((benefit) => (
-              <Box key={benefit.title}>
-                <Box
-                  sx={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: 2,
-                    bgcolor: 'primary.light',
-                    color: 'primary.main',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    mb: 2,
-                  }}
-                >
-                  {benefit.icon}
-                </Box>
-                <Typography variant="h4" sx={{ mb: 1 }}>
-                  {benefit.title}
-                </Typography>
-                <Typography variant="body2">{benefit.description}</Typography>
-              </Box>
+              <Card key={benefit.title} sx={CARD_HOVER_SX}>
+                <CardContent sx={{ p: 3 }}>
+                  <Box
+                    sx={{
+                      width: 48,
+                      height: 48,
+                      borderRadius: 2,
+                      bgcolor: 'primary.light',
+                      color: 'primary.main',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      mb: 2,
+                    }}
+                  >
+                    {benefit.icon}
+                  </Box>
+                  <Typography variant="h4" sx={{ mb: 1 }}>
+                    {benefit.title}
+                  </Typography>
+                  <Typography variant="body2">{benefit.description}</Typography>
+                </CardContent>
+              </Card>
             ))}
           </Box>
         </Container>
