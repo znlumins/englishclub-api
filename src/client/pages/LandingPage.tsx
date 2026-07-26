@@ -11,6 +11,7 @@ import CardContent from '@mui/material/CardContent';
 import HowToRegIcon from '@mui/icons-material/HowToReg';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import Brand from '../components/Brand';
 
 const STEPS = [
   {
@@ -35,9 +36,7 @@ export default function LandingPage() {
     <Box>
       <AppBar position="sticky" color="transparent">
         <Toolbar sx={{ justifyContent: 'space-between' }}>
-          <Typography variant="h4" sx={{ fontWeight: 800, color: 'primary.main' }}>
-            English Club
-          </Typography>
+          <Brand />
           <Stack direction="row" spacing={1.5}>
             <Button component={RouterLink} to="/login" variant="outlined">
               Log in

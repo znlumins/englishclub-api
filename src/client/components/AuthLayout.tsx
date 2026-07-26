@@ -3,6 +3,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Typography from '@mui/material/Typography';
+import Brand from './Brand';
 
 interface AuthLayoutProps {
   eyebrow: string;
@@ -25,14 +26,9 @@ export default function AuthLayout({ eyebrow, title, footer, children }: AuthLay
       }}
     >
       <Card sx={{ width: '100%', maxWidth: 440, p: { xs: 3, sm: 5 } }}>
-        <Typography
-          component={RouterLink}
-          to="/"
-          variant="h4"
-          sx={{ fontWeight: 800, color: 'primary.main', textDecoration: 'none', display: 'block', mb: 3 }}
-        >
-          English Club
-        </Typography>
+        <Box component={RouterLink} to="/" sx={{ display: 'block', width: 'fit-content', textDecoration: 'none', mb: 3 }}>
+          <Brand />
+        </Box>
         <Typography variant="overline">{eyebrow}</Typography>
         <Typography variant="h2" sx={{ fontSize: '1.75rem', mb: 3 }}>
           {title}

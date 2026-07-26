@@ -24,6 +24,7 @@ import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import GroupIcon from '@mui/icons-material/Group';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useAuth } from '../context/AuthContext';
+import Brand from './Brand';
 
 const DRAWER_WIDTH = 260;
 
@@ -74,9 +75,7 @@ export default function AppShell() {
   const drawerContent = (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <Toolbar sx={{ px: 3 }}>
-        <Typography variant="h4" sx={{ fontWeight: 800, color: 'primary.main' }}>
-          English Club
-        </Typography>
+        <Brand />
       </Toolbar>
       <Divider />
       <List sx={{ flex: 1, pt: 2 }}>
@@ -131,9 +130,7 @@ export default function AppShell() {
             <IconButton edge="start" onClick={() => setMobileOpen(true)} sx={{ mr: 1 }}>
               <MenuIcon />
             </IconButton>
-            <Typography variant="h4" sx={{ fontWeight: 800, color: 'primary.main' }}>
-              English Club
-            </Typography>
+            <Brand size={28} />
           </Toolbar>
         </AppBar>
       )}

@@ -48,7 +48,7 @@ Tidak ada warna hitam pekat (`#000`) atau abu-abu acak (`#555`, `red` polos) —
 ### A. Navigation Bar (Navbar)
 - **Posisi:** `sticky top: 0`, background putih semi-transparan dengan `backdrop-filter: blur(12px)` agar terasa "melayang" saat discroll.
 - **Border-bottom:** 1px solid `--color-border`, tanpa shadow tebal — cukup blur untuk kedalaman.
-- **Brand:** logo mark persegi (radius `--radius-sm`, gradient primary) + wordmark bold, bukan teks polos.
+- **Brand:** logo mark asli (monogram "EC" gaya geometris/De Stijl, `src/client/assets/logo.png`) + wordmark "English Club" bold — komponen `<Brand />` (`src/client/components/Brand.tsx`), dipakai konsisten di navbar landing, sidebar (`AppShell`), dan header halaman login/register (`AuthLayout`). Favicon browser (`src/client/public/favicon.png`) pakai aset yang sama.
 - **Layout:** Logo kiri, menu tengah/kanan, CTA (`btn-primary`) paling kanan.
 
 ### B. Course Cards (Katalog Kelas)
