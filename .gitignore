@@ -5,3 +5,6 @@ node_modules
 /generated/prisma
 *.db
 *.db-journal
+
+# Vite client build output
+/dist
