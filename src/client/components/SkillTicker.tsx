@@ -3,6 +3,9 @@ import Typography from '@mui/material/Typography';
 
 const SKILLS = ['Speaking', 'Listening', 'Writing', 'Reading', 'Grammar', 'Vocabulary', 'Pronunciation', 'TOEFL/IELTS Prep'];
 
+// Rotasi warna dot memakai token yang sudah ada (primary/success/warning), murni dekoratif.
+const DOT_COLORS = ['primary.main', 'success.main', 'warning.main'];
+
 export default function SkillTicker() {
   return (
     <Box
@@ -30,7 +33,7 @@ export default function SkillTicker() {
       >
         {[0, 1].map((group) => (
           <Box key={group} sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-            {SKILLS.map((skill) => (
+            {SKILLS.map((skill, index) => (
               <Box key={skill} sx={{ display: 'flex', alignItems: 'center' }}>
                 <Typography
                   sx={{
@@ -43,7 +46,15 @@ export default function SkillTicker() {
                 >
                   {skill}
                 </Typography>
-                <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'primary.main', flexShrink: 0 }} />
+                <Box
+                  sx={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    bgcolor: DOT_COLORS[index % DOT_COLORS.length],
+                    flexShrink: 0,
+                  }}
+                />
               </Box>
             ))}
           </Box>

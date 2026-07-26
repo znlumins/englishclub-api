@@ -20,6 +20,14 @@ const CARD_HOVER_SX = {
   '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 8px 24px rgba(15,23,42,.08)' },
 };
 
+// Rotasi warna dekoratif (bukan CTA/status) memakai token yang sudah ada di theme,
+// supaya landing page tidak terasa monoton indigo di semua tempat.
+const ACCENT_VARIANTS = [
+  { bg: 'primary.light', fg: 'primary.main', shadow: 'rgba(79,70,229,.25)' },
+  { bg: 'success.light', fg: 'success.main', shadow: 'rgba(22,163,74,.25)' },
+  { bg: 'warning.light', fg: 'warning.main', shadow: 'rgba(217,119,6,.25)' },
+];
+
 const STEPS = [
   {
     title: 'Daftar & Disetujui',
@@ -143,33 +151,36 @@ export default function LandingPage() {
               position: 'relative',
             }}
           >
-            {STEPS.map((step, index) => (
-              <Box key={step.title} sx={{ textAlign: { xs: 'left', md: 'center' } }}>
-                <Box
-                  sx={{
-                    width: 56,
-                    height: 56,
-                    borderRadius: '50%',
-                    bgcolor: 'primary.main',
-                    color: '#FFFFFF',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '1.25rem',
-                    fontWeight: 800,
-                    mx: { xs: 0, md: 'auto' },
-                    mb: 3,
-                    boxShadow: '0 8px 24px rgba(79,70,229,.25)',
-                  }}
-                >
-                  {`0${index + 1}`}
+            {STEPS.map((step, index) => {
+              const accent = ACCENT_VARIANTS[index % ACCENT_VARIANTS.length];
+              return (
+                <Box key={step.title} sx={{ textAlign: { xs: 'left', md: 'center' } }}>
+                  <Box
+                    sx={{
+                      width: 56,
+                      height: 56,
+                      borderRadius: '50%',
+                      bgcolor: accent.fg,
+                      color: '#FFFFFF',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '1.25rem',
+                      fontWeight: 800,
+                      mx: { xs: 0, md: 'auto' },
+                      mb: 3,
+                      boxShadow: `0 8px 24px ${accent.shadow}`,
+                    }}
+                  >
+                    {`0${index + 1}`}
+                  </Box>
+                  <Typography variant="h4" sx={{ mb: 1 }}>
+                    {step.title}
+                  </Typography>
+                  <Typography variant="body2">{step.description}</Typography>
                 </Box>
-                <Typography variant="h4" sx={{ mb: 1 }}>
-                  {step.title}
-                </Typography>
-                <Typography variant="body2">{step.description}</Typography>
-              </Box>
-            ))}
+              );
+            })}
           </Box>
         </Box>
       </Container>
@@ -231,31 +242,34 @@ export default function LandingPage() {
               gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' },
             }}
           >
-            {OTHER_BENEFITS.map((benefit) => (
-              <Card key={benefit.title} sx={CARD_HOVER_SX}>
-                <CardContent sx={{ p: 3 }}>
-                  <Box
-                    sx={{
-                      width: 48,
-                      height: 48,
-                      borderRadius: 2,
-                      bgcolor: 'primary.light',
-                      color: 'primary.main',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      mb: 2,
-                    }}
-                  >
-                    {benefit.icon}
-                  </Box>
-                  <Typography variant="h4" sx={{ mb: 1 }}>
-                    {benefit.title}
-                  </Typography>
-                  <Typography variant="body2">{benefit.description}</Typography>
-                </CardContent>
-              </Card>
-            ))}
+            {OTHER_BENEFITS.map((benefit, index) => {
+              const accent = ACCENT_VARIANTS[index % ACCENT_VARIANTS.length];
+              return (
+                <Card key={benefit.title} sx={CARD_HOVER_SX}>
+                  <CardContent sx={{ p: 3 }}>
+                    <Box
+                      sx={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: 2,
+                        bgcolor: accent.bg,
+                        color: accent.fg,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        mb: 2,
+                      }}
+                    >
+                      {benefit.icon}
+                    </Box>
+                    <Typography variant="h4" sx={{ mb: 1 }}>
+                      {benefit.title}
+                    </Typography>
+                    <Typography variant="body2">{benefit.description}</Typography>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </Box>
         </Container>
       </Box>
