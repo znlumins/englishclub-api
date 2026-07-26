@@ -1,7 +1,7 @@
 {
   "name": "lso",
   "version": "1.0.0",
-  "description": "",
+  "description": "Learning Management System for LSO English Club Vokasi UB",
   "main": "index.js",
   "engines": {
     "node": ">=20.0.0"
