@@ -8,8 +8,8 @@
     "dev": "nodemon src/app.js",
     "dev:client": "vite",
     "build:client": "vite build",
-    "build": "npm run build:client && prisma generate",
-    "start": "prisma db push && node src/app.js",
+    "build": "npm run build:client && npx prisma generate",
+    "start": "npx prisma db push && node src/app.js",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [],
@@ -29,6 +29,7 @@
     "express": "^5.2.1",
     "joi": "^18.2.3",
     "jsonwebtoken": "^9.0.3",
+    "prisma": "^5.22.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router-dom": "^7.18.1"
@@ -39,7 +40,6 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.4",
     "nodemon": "^3.1.14",
-    "prisma": "^5.22.0",
     "typescript": "^7.0.2",
     "vite": "^8.1.5"
   }
