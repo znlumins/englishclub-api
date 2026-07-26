@@ -11,7 +11,7 @@
     "dev": "nodemon src/app.js",
     "dev:client": "vite",
     "build:client": "vite build",
-    "build": "npx prisma generate && npx vite build",
+    "build": "npx prisma generate && NODE_OPTIONS=--max-old-space-size=2048 npx vite build",
     "start": "npx prisma db push && node src/app.js",
     "typecheck": "tsc --noEmit"
   },
