@@ -11,8 +11,8 @@
     "dev": "nodemon src/app.js",
     "dev:client": "vite",
     "build:client": "vite build",
-    "build": "npm run build:client",
-    "start": "npx prisma generate && npx prisma db push --accept-data-loss && node src/app.js",
+    "build": "npx prisma generate && npm run build:client",
+    "start": "node src/app.js",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [],
