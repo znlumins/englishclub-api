@@ -1,8 +1,10 @@
 import type { ReactNode } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import Box from '@mui/material/Box';
+import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutlined';
 import Brand from './Brand';
 
@@ -26,7 +28,26 @@ export default function AuthLayout({
   panelHighlights,
 }: AuthLayoutProps) {
   return (
-    <Box sx={{ minHeight: '100vh', display: 'flex' }}>
+    <Box sx={{ minHeight: '100vh', display: 'flex', position: 'relative' }}>
+      <IconButton
+        component={RouterLink}
+        to="/"
+        aria-label="Kembali ke Beranda"
+        sx={{
+          position: 'absolute',
+          top: 24,
+          left: 24,
+          zIndex: 1,
+          bgcolor: 'background.paper',
+          border: '1px solid',
+          borderColor: 'divider',
+          boxShadow: '0 1px 2px rgba(15,23,42,.06)',
+          '&:hover': { bgcolor: 'background.default' },
+        }}
+      >
+        <ArrowBackIcon fontSize="small" />
+      </IconButton>
+
       <Box
         sx={{
           flex: { xs: '1 1 100%', md: '0 0 480px' },
