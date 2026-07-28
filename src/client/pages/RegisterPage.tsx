@@ -34,7 +34,7 @@ export default function RegisterPage() {
     setSubmitting(false);
     if (result.ok) {
       showToast(result.message ?? 'Akun berhasil dibuat. Menunggu persetujuan admin.', 'success');
-      navigate('/login');
+      navigate('/pending-approval');
     } else {
       showToast(result.message ?? 'Registrasi gagal', 'error');
     }

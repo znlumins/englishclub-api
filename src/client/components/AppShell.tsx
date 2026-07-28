@@ -86,7 +86,7 @@ export default function AppShell() {
               variant="overline"
               sx={{ display: 'block', px: 3, mt: 2, mb: 0.5, fontSize: 11 }}
             >
-              Admin
+              {isAdmin ? 'Admin' : 'Kelola'}
             </Typography>
             {ADMIN_LINKS.map(navItem)}
             {isAdmin && ADMIN_ONLY_LINKS.map(navItem)}

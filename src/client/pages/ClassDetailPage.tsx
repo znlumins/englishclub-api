@@ -8,6 +8,7 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
+import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Divider from '@mui/material/Divider';
@@ -17,6 +18,7 @@ import LinkIcon from '@mui/icons-material/Link';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import QuizIcon from '@mui/icons-material/Quiz';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import PageBreadcrumb from '../components/PageBreadcrumb';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { api } from '../api/client';
@@ -24,11 +26,13 @@ import type { ClassDetailDTO, QuizListItemDTO, MaterialType } from '../api/types
 import PageLoader from '../components/PageLoader';
 import EmptyState from '../components/EmptyState';
 
-const MATERIAL_ICON: Record<MaterialType, React.ReactNode> = {
+const MATERIAL_ICON: Partial<Record<MaterialType, React.ReactNode>> = {
   link: <LinkIcon />,
   video: <OndemandVideoIcon />,
   pdf: <DescriptionIcon />,
 };
+
+const FALLBACK_MATERIAL_ICON = <DescriptionIcon />;
 
 export default function ClassDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -80,7 +84,8 @@ export default function ClassDetailPage() {
 
   return (
     <Box>
-      <Typography variant="overline">Detail Kelas</Typography>
+      <PageBreadcrumb items={[{ label: detail.name }]} />
+
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 2, mb: 1, flexWrap: 'wrap' }}>
         <Typography variant="h2">{detail.name}</Typography>
         {enrolled && <Chip label="Terdaftar" color="success" />}
@@ -102,6 +107,40 @@ export default function ClassDetailPage() {
       </Typography>
       {detail.materials.length === 0 ? (
         <EmptyState icon={<DescriptionIcon />} title="Belum ada materi" description="Instructor belum menambahkan materi." />
+      ) : !enrolled && !isAdminOrInstructor ? (
+        <Card sx={{ mb: 5 }}>
+          <CardContent sx={{ p: 3 }}>
+            <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
+              Kelas ini memiliki <strong>{detail.materials.length} materi</strong>. Daftar untuk mengakses:
+            </Typography>
+            <List disablePadding>
+              {detail.materials.map((material, idx) => (
+                <Box key={material.id}>
+                  {idx > 0 && <Divider component="li" />}
+                  <ListItem disablePadding sx={{ py: 0.5 }}>
+                    <ListItemIcon sx={{ minWidth: 36 }}>{MATERIAL_ICON[material.type] ?? FALLBACK_MATERIAL_ICON}</ListItemIcon>
+                    <ListItemText
+                      primary={material.title}
+                      secondary={material.type.toUpperCase()}
+                      slotProps={{
+                        primary: { variant: 'body2', color: 'text.secondary' },
+                        secondary: { variant: 'caption' },
+                      }}
+                    />
+                  </ListItem>
+                </Box>
+              ))}
+            </List>
+            <Button
+              variant="contained"
+              onClick={handleEnroll}
+              disabled={enrolling}
+              sx={{ mt: 2 }}
+            >
+              {enrolling ? 'Memproses...' : 'Enroll untuk Akses Materi'}
+            </Button>
+          </CardContent>
+        </Card>
       ) : (
         <Card sx={{ mb: 5 }}>
           <List disablePadding>
@@ -109,8 +148,15 @@ export default function ClassDetailPage() {
               <Box key={material.id}>
                 {idx > 0 && <Divider component="li" />}
                 <ListItemButton component="a" href={material.url} target="_blank" rel="noopener noreferrer">
-                  <ListItemIcon>{MATERIAL_ICON[material.type]}</ListItemIcon>
-                  <ListItemText primary={material.title} secondary={material.type.toUpperCase()} />
+                  <ListItemIcon>{MATERIAL_ICON[material.type] ?? FALLBACK_MATERIAL_ICON}</ListItemIcon>
+                  <ListItemText
+                    primary={material.title}
+                    secondary={material.type.toUpperCase()}
+                    slotProps={{
+                      primary: { variant: 'body2' },
+                      secondary: { variant: 'caption' },
+                    }}
+                  />
                   <OpenInNewIcon fontSize="small" sx={{ color: 'text.secondary' }} />
                 </ListItemButton>
               </Box>
@@ -135,6 +181,8 @@ export default function ClassDetailPage() {
         <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' } }}>
           {quizzes.map((quiz) => {
             const lastAttempt = quiz.attempts[0];
+            const attemptCount = quiz.attemptCount ?? 0;
+            const attemptLabel = attemptCount === 1 ? '1 kali dikerjakan' : `${attemptCount} kali dikerjakan`;
             return (
               <Card key={quiz.id}>
                 <CardContent sx={{ p: 3 }}>
@@ -145,12 +193,22 @@ export default function ClassDetailPage() {
                     {quiz._count.questions} soal
                   </Typography>
                   {lastAttempt && (
-                    <Chip
-                      label={`Skor terakhir: ${lastAttempt.score}`}
-                      size="small"
-                      color={lastAttempt.score >= 60 ? 'success' : 'warning'}
-                      sx={{ mb: 1.5 }}
-                    />
+                    <Box sx={{ mb: 1.5 }}>
+                      <Chip
+                        label={`Skor terakhir: ${lastAttempt.score}`}
+                        size="small"
+                        color={lastAttempt.score >= 60 ? 'success' : 'warning'}
+                        sx={{ mb: 0.5 }}
+                      />
+                      <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary' }}>
+                        {attemptLabel}
+                      </Typography>
+                    </Box>
+                  )}
+                  {!lastAttempt && (
+                    <Typography variant="caption" sx={{ display: 'block', mb: 1.5, color: 'text.secondary' }}>
+                      Belum pernah dikerjakan
+                    </Typography>
                   )}
                   <Button
                     component={RouterLink}

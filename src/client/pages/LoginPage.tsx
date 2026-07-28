@@ -5,14 +5,19 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Link from '@mui/material/Link';
+import Alert from '@mui/material/Alert';
+import ScheduleIcon from '@mui/icons-material/Schedule';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import AuthLayout from '../components/AuthLayout';
+
+const PENDING_APPROVAL_MSG = 'menunggu persetujuan admin';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [pendingError, setPendingError] = useState(false);
   const { login } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
@@ -20,12 +25,18 @@ export default function LoginPage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
+    setPendingError(false);
     const result = await login(email, password);
     setSubmitting(false);
     if (result.ok) {
       navigate('/dashboard');
     } else {
-      showToast(result.message ?? 'Email atau password salah', 'error');
+      const msg = result.message ?? '';
+      if (msg.includes(PENDING_APPROVAL_MSG)) {
+        setPendingError(true);
+      } else {
+        showToast(msg || 'Email atau password salah', 'error');
+      }
     }
   };
 
@@ -50,6 +61,31 @@ export default function LoginPage() {
       }
     >
       <Stack component="form" spacing={2.5} onSubmit={handleSubmit}>
+        {pendingError && (
+          <Alert
+            severity="warning"
+            icon={<ScheduleIcon />}
+            sx={{
+              borderRadius: 2,
+              '& .MuiAlert-message': { width: '100%' },
+            }}
+          >
+            <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>
+              Akun Belum Disetujui
+            </Typography>
+            <Typography variant="body2" sx={{ mb: 1 }}>
+              Akun kamu masih menunggu persetujuan dari admin. Kamu akan bisa login setelah disetujui.
+            </Typography>
+            <Link
+              component={RouterLink}
+              to="/pending-approval"
+              underline="hover"
+              sx={{ fontWeight: 600, fontSize: '0.875rem' }}
+            >
+              Pelajari Lebih Lanjut →
+            </Link>
+          </Alert>
+        )}
         <TextField
           label="Email"
           type="email"

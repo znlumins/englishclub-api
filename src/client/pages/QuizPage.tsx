@@ -12,6 +12,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Radio from '@mui/material/Radio';
 import Stack from '@mui/material/Stack';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import PageBreadcrumb from '../components/PageBreadcrumb';
 import { useToast } from '../context/ToastContext';
 import { api } from '../api/client';
 import type { QuestionOptionsDTO, QuizDetailDTO, SubmitQuizResult } from '../api/types';
@@ -68,7 +69,8 @@ export default function QuizPage() {
 
   return (
     <Box sx={{ maxWidth: 720, mx: 'auto' }}>
-      <Typography variant="overline">Kuis</Typography>
+      <PageBreadcrumb items={[{ label: quiz.title }]} />
+
       <Typography variant="h2" sx={{ mb: 4 }}>
         {quiz.title}
       </Typography>

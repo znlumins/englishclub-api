@@ -54,11 +54,17 @@ export const deleteQuiz = asyncHandler(async (req, res) => {
 
 // Get Quizzes by Class (Member)
 export const getQuizzesByClass = asyncHandler(async (req, res) => {
+  const userId = req.user?.id;
+  const userRole = req.user?.role;
+  if (!userId || !userRole) {
+    return res.status(401).json({ success: false, error: { message: 'Unauthorized' } });
+  }
+
   const { classId } = req.params;
 
-  if (req.user.role === 'member') {
+  if (userRole === 'member') {
     const enrollment = await prisma.enrollment.findUnique({
-      where: { userId_classId: { userId: req.user.id, classId } }
+      where: { userId_classId: { userId, classId } }
     });
     if (!enrollment) {
       return res.status(403).json({ success: false, error: { message: 'Anda tidak terdaftar di kelas ini' } });
@@ -70,18 +76,40 @@ export const getQuizzesByClass = asyncHandler(async (req, res) => {
     include: {
       _count: { select: { questions: true } },
       attempts: {
-        where: { userId: req.user.id },
+        where: { userId },
         orderBy: { created_at: 'desc' },
         take: 1
       }
     }
   });
 
-  res.json({ success: true, data: quizzes });
+  // Hitung total attempt count semua quiz sekaligus (1 query, bukan N query)
+  const quizIds = quizzes.map((q) => q.id);
+  const attemptCounts = await prisma.quizAttempt.groupBy({
+    by: ['quizId'],
+    where: { userId, quizId: { in: quizIds } },
+    _count: { id: true },
+  });
+
+  const attemptCountMap = Object.fromEntries(
+    attemptCounts.map((entry) => [entry.quizId, entry._count.id])
+  );
+
+  const quizzesWithCount = quizzes.map((quiz) => ({
+    ...quiz,
+    attemptCount: attemptCountMap[quiz.id] ?? 0,
+  }));
+
+  res.json({ success: true, data: quizzesWithCount });
 });
 
 // Get single quiz with questions
 export const getQuizById = asyncHandler(async (req, res) => {
+  const userRole = req.user?.role;
+  if (!req.user?.id || !userRole) {
+    return res.status(401).json({ success: false, error: { message: 'Unauthorized' } });
+  }
+
   const { id } = req.params;
 
   const quiz = await prisma.quiz.findUnique({
@@ -93,7 +121,7 @@ export const getQuizById = asyncHandler(async (req, res) => {
 
   const questions = quiz.questions.map(q => {
     const parsedOptions = JSON.parse(q.options);
-    if (req.user.role === 'member') {
+    if (userRole === 'member') {
       return {
         id: q.id, question_text: q.question_text, options: parsedOptions
       };
@@ -106,6 +134,12 @@ export const getQuizById = asyncHandler(async (req, res) => {
 
 // Submit Quiz Attempt
 export const submitQuiz = asyncHandler(async (req, res) => {
+  const userId = req.user?.id;
+  const userRole = req.user?.role;
+  if (!userId || !userRole) {
+    return res.status(401).json({ success: false, error: { message: 'Unauthorized' } });
+  }
+
   const { id } = req.params;
   const { answers } = req.body;
 
@@ -128,18 +162,18 @@ export const submitQuiz = asyncHandler(async (req, res) => {
   const score = Math.round((correctCount / totalQuestions) * 100) || 0;
 
   const previousAttemptCount = await prisma.quizAttempt.count({
-    where: { quizId: id, userId: req.user.id }
+    where: { quizId: id, userId }
   });
   const isFirstAttempt = previousAttemptCount === 0;
 
   await prisma.quizAttempt.create({
-    data: { quizId: id, userId: req.user.id, score }
+    data: { quizId: id, userId, score }
   });
 
   // Gamification: +20 points hanya untuk attempt pertama, cegah numpuk poin dari submit berulang
   if (isFirstAttempt) {
     await prisma.user.update({
-      where: { id: req.user.id },
+      where: { id: userId },
       data: { points: { increment: 20 } }
     });
   }

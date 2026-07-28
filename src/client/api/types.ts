@@ -81,6 +81,7 @@ export interface QuizListItemDTO {
   classId: string;
   _count: { questions: number };
   attempts: QuizAttemptDTO[];
+  attemptCount?: number;
 }
 
 export interface QuizDetailDTO {
