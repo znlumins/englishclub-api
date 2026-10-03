@@ -454,23 +454,28 @@ export const getClassLeaderboard = asyncHandler(async (req, res) => {
   const quizzes = await prisma.quiz.findMany({ where: { classId }, select: { id: true } });
   const quizIds = quizzes.map((q) => q.id);
 
+  // Ambil skor terbaik per (user, quiz), lalu rata-ratakan antar kuis
+  // B-15: sebelumnya pakai skor TERBAIK, padahal jawaban benar langsung dibuka
+  // di akhir attempt pertama. Member bisa "tebus" jawaban di attempt-1, retake
+  // untuk 100. Leaderboard kelas harus dihitung dari ATTEMPT PERTAMA saja
+  // (created_at paling awal per user+quiz) — satu-satunya attempt yang dapat poin.
   const attempts = quizIds.length
     ? await prisma.quizAttempt.findMany({
         where: { quizId: { in: quizIds } },
-        select: { userId: true, quizId: true, score: true }
+        select: { userId: true, quizId: true, score: true, created_at: true },
+        orderBy: { created_at: 'asc' }
       })
     : [];
 
-  // Ambil skor terbaik per (user, quiz), lalu rata-ratakan antar kuis
-  const bestScoreByUserQuiz = new Map();
+  const firstScoreByUserQuiz = new Map();
   for (const a of attempts) {
     const key = `${a.userId}:${a.quizId}`;
-    const prev = bestScoreByUserQuiz.get(key);
-    if (prev === undefined || a.score > prev) bestScoreByUserQuiz.set(key, a.score);
+    // orderBy created_at asc → kejadian pertama adalah attempt pertama
+    if (!firstScoreByUserQuiz.has(key)) firstScoreByUserQuiz.set(key, a.score);
   }
 
   const totalsByUser = new Map();
-  for (const [key, score] of bestScoreByUserQuiz.entries()) {
+  for (const [key, score] of firstScoreByUserQuiz.entries()) {
     const userId = key.split(':')[0];
     const entry = totalsByUser.get(userId) ?? { total: 0, count: 0 };
     entry.total += score;

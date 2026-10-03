@@ -24,8 +24,20 @@ export const getStats = asyncHandler(async (req, res) => {
   const totalUsers = statusCounts.pending + statusCounts.active + statusCounts.blocked;
 
   // Perkiraan tingkat penyelesaian: member aktif yang pernah submit minimal 1 kuis
+  // B-16: quizTakers di-groupBy dari SEMUA user (termasuk yang kini
+  // blocked/pending) sehingga pembilang bisa melebihi penyebut (active) →
+  // persentase >100%. Filter penghitung ke user active saja.
+  const activeQuizTakers = quizTakers.length
+    ? (
+        await prisma.user.findMany({
+          where: { id: { in: quizTakers.map((q) => q.userId) }, status: 'active' },
+          select: { id: true }
+        })
+      ).length
+    : 0;
+
   const completionRate = statusCounts.active > 0
-    ? Math.round((quizTakers.length / statusCounts.active) * 100)
+    ? Math.round((activeQuizTakers / statusCounts.active) * 100)
     : 0;
 
   res.json({
