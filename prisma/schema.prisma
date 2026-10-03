@@ -23,6 +23,10 @@ model User {
   points        Int       @default(0)
   streak_days   Int       @default(0)
   last_active_at DateTime?
+  // B-5: token JWT stateless 30 hari tidak otomatis batal saat password diganti.
+  // Simpan waktu perubahan password; authenticate menolak token yang diterbitkan
+  // sebelum timestamp ini (bandingkan iat JWT dengan kolom ini).
+  password_changed_at DateTime?
   reset_token   String?   @unique
   reset_token_expiry DateTime?
   created_at    DateTime  @default(now())

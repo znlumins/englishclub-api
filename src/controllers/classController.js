@@ -7,16 +7,17 @@ const prisma = new PrismaClient();
 
 // Kurangi poin +50 yang didapat saat enroll (dipakai saat unenroll/dikeluarkan),
 // supaya keluar-masuk kelas tidak jadi celah farming poin. Tidak sampai negatif.
-async function deductEnrollPoints(userId, className) {
-  const user = await prisma.user.findUnique({ where: { id: userId }, select: { points: true } });
-  const deduction = Math.min(50, user?.points ?? 0);
+// B-7: read-modify-write dilakukan di dalam transaction dengan FOR UPDATE supaya
+// dua operasi paralel tidak membaca poin stale lalu decrement 2x sampai negatif.
+async function deductEnrollPoints(userId, className, tx) {
+  const db = tx ?? prisma;
+  const rows = await db.$queryRaw`SELECT points FROM \`User\` WHERE id = ${userId} FOR UPDATE`;
+  const points = rows[0]?.points ?? 0;
+  const deduction = Math.min(50, points);
   if (deduction <= 0) return;
 
-  await prisma.user.update({
-    where: { id: userId },
-    data: { points: { decrement: deduction } }
-  });
-  await prisma.pointTransaction.create({
+  await db.$executeRaw`UPDATE \`User\` SET points = points - ${deduction} WHERE id = ${userId}`;
+  await db.pointTransaction.create({
     data: {
       userId,
       type: 'enroll',
@@ -101,13 +102,17 @@ export const deleteClass = asyncHandler(async (req, res) => {
 
   const quizzes = await prisma.quiz.findMany({ where: { classId: id }, select: { id: true } });
 
-  // Delete all related data
-  await prisma.quizAttempt.deleteMany({ where: { quiz: { classId: id } } });
-  await prisma.question.deleteMany({ where: { quiz: { classId: id } } });
-  await prisma.quiz.deleteMany({ where: { classId: id } });
-  await prisma.material.deleteMany({ where: { classId: id } });
-  await prisma.enrollment.deleteMany({ where: { classId: id } });
-  await prisma.class.delete({ where: { id } });
+  // B-6: seluruh delete berjenjang harus atomic. Tanpa transaction, kegagalan
+  // di tengah (mis. koneksi terputus) meninggalkan data yatim: kuis tanpa kelas,
+  // enrollment menunjuk kelas yang tidak ada, dll.
+  await prisma.$transaction(async (tx) => {
+    await tx.quizAttempt.deleteMany({ where: { quiz: { classId: id } } });
+    await tx.question.deleteMany({ where: { quiz: { classId: id } } });
+    await tx.quiz.deleteMany({ where: { classId: id } });
+    await tx.material.deleteMany({ where: { classId: id } });
+    await tx.enrollment.deleteMany({ where: { classId: id } });
+    await tx.class.delete({ where: { id } });
+  });
 
   // Bersihkan notifikasi lama yang link-nya menunjuk ke kelas/kuis yang baru saja dihapus
   const danglingLinks = [`/classes/${id}`, ...quizzes.map((q) => `/quiz/${q.id}`)];
@@ -145,25 +150,36 @@ export const enrollClass = asyncHandler(async (req, res) => {
     return res.status(404).json({ success: false, error: { message: 'Kelas tidak ditemukan' } });
   }
 
-  await prisma.enrollment.create({
-    data: { userId, classId }
-  });
+  // B-6: enrollment + penambahan poin + catat transaksi wajib atomic. Tanpa ini,
+  // kalau gagal di tengah jalan user sudah ter-enroll tapi tanpa poin (atau
+  // sebaliknya) — data inkonsisten.
+  try {
+    await prisma.$transaction(async (tx) => {
+      // Unique constraint userId_classId menjadi pertahanan terakhir melawan
+      // enroll paralel (double-click / multi-tab) — meski cek di atas lolos.
+      await tx.enrollment.create({ data: { userId, classId } });
 
-  // Gamification: Add +50 points for enrolling
-  await prisma.user.update({
-    where: { id: userId },
-    data: { points: { increment: 50 } }
-  });
+      // Gamifikasi: +50 poin saat enroll
+      await tx.user.update({
+        where: { id: userId },
+        data: { points: { increment: 50 } }
+      });
 
-  // Catat transaksi poin
-  await prisma.pointTransaction.create({
-    data: {
-      userId,
-      type: 'enroll',
-      amount: 50,
-      description: `Enroll kelas "${classData?.name ?? classId}"`
+      await tx.pointTransaction.create({
+        data: {
+          userId,
+          type: 'enroll',
+          amount: 50,
+          description: `Enroll kelas "${classData?.name ?? classId}"`
+        }
+      });
+    });
+  } catch (err) {
+    if (err?.code === 'P2002') {
+      return res.status(400).json({ success: false, error: { message: 'Anda sudah terdaftar di kelas ini' } });
     }
-  });
+    throw err;
+  }
 
   await checkClassCollectorBadge(userId);
   await checkTop10Badge(userId);
@@ -186,11 +202,14 @@ export const unenrollClass = asyncHandler(async (req, res) => {
 
   const classData = await prisma.class.findUnique({ where: { id: classId }, select: { name: true } });
 
-  await prisma.enrollment.delete({ where: { userId_classId: { userId, classId } } });
-
-  // Kurangi poin secara simetris dengan poin yang didapat saat enroll,
-  // supaya keluar-masuk kelas tidak jadi cara memfarming poin.
-  await deductEnrollPoints(userId, classData?.name ?? classId);
+  // B-6: hapus enrollment & pengurangan poin harus atomic — kalau pengurangan
+  // gagal, user keluar kelas tapi poin +50-nya tidak dikurangkan (celah farming).
+  await prisma.$transaction(async (tx) => {
+    await tx.enrollment.delete({ where: { userId_classId: { userId, classId } } });
+    // Kurangi poin secara simetris dengan poin yang didapat saat enroll,
+    // supaya keluar-masuk kelas tidak jadi cara memfarming poin.
+    await deductEnrollPoints(userId, classData?.name ?? classId, tx);
+  });
 
   res.json({ success: true, message: 'Berhasil keluar dari kelas' });
 });
@@ -395,11 +414,14 @@ export const removeMember = asyncHandler(async (req, res) => {
     return res.status(404).json({ success: false, error: { message: 'User tidak terdaftar di kelas ini' } });
   }
 
-  await prisma.enrollment.delete({
-    where: { userId_classId: { userId, classId } }
-  });
+  // B-6: sama seperti unenroll — delete enrollment & pengurangan poin atomic.
+  await prisma.$transaction(async (tx) => {
+    await tx.enrollment.delete({
+      where: { userId_classId: { userId, classId } }
+    });
 
-  await deductEnrollPoints(userId, classData.name);
+    await deductEnrollPoints(userId, classData.name, tx);
+  });
 
   res.json({ success: true, message: 'Peserta berhasil dikeluarkan dari kelas' });
 });

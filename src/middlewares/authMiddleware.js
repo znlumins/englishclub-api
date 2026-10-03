@@ -26,9 +26,11 @@ export const authenticate = async (req, res, next) => {
 
     // Token berlaku 30 hari — jangan percaya role/status yang di-bake saat login,
     // ambil ulang dari DB supaya user yang diblokir/diturunkan rolenya langsung ditolak.
+    // B-5: ambil juga password_changed_at untuk membatalkan token lama setelah
+    // password diganti/direset (token stateless tidak bisa di-revoke tanpa ini).
     const user = await prisma.user.findUnique({
       where: { id: decoded.id },
-      select: { id: true, email: true, role: true, status: true }
+      select: { id: true, email: true, role: true, status: true, password_changed_at: true }
     });
 
     if (!user) {
@@ -39,6 +41,10 @@ export const authenticate = async (req, res, next) => {
     }
     if (user.status === 'pending') {
       return res.status(403).json({ success: false, error: { message: 'Akun Anda masih menunggu persetujuan admin' } });
+    }
+    // Token diterbitkan SEBELUM password terakhir diubah → token sudah tidak valid.
+    if (user.password_changed_at && decoded.iat && user.password_changed_at.getTime() > decoded.iat * 1000) {
+      return res.status(401).json({ success: false, error: { message: 'Password telah diubah. Silakan login kembali.' } });
     }
 
     req.user = user;

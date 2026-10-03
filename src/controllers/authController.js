@@ -31,22 +31,36 @@ export const register = asyncHandler(async (req, res) => {
 
   const password_hash = await bcrypt.hash(password, 10);
 
-  const newUser = await prisma.user.create({
-    data: {
-      email, password_hash, nim, full_name,
-      program_studi,
-      angkatan: angkatan ? parseInt(angkatan) : null,
-      phone,
-      status: 'pending',
-      role: 'member'
-    }
-  });
+  // B-12: cek existing + create adalah race — dua register paralel bisa lolos
+  // cek lalu keduanya create → P2002 → 500 dengan pesan Prisma mentah (bocor
+  // nama tabel). Tangkap P2002 & ubah jadi pesan 400 yang ramah pengguna.
+  try {
+    const newUser = await prisma.user.create({
+      data: {
+        email, password_hash, nim, full_name,
+        program_studi,
+        angkatan: angkatan ? parseInt(angkatan) : null,
+        phone,
+        status: 'pending',
+        role: 'member'
+      }
+    });
 
-  res.status(201).json({
-    success: true,
-    message: 'Akun berhasil dibuat. Menunggu persetujuan admin.',
-    data: { id: newUser.id, email: newUser.email, status: newUser.status }
-  });
+    res.status(201).json({
+      success: true,
+      message: 'Akun berhasil dibuat. Menunggu persetujuan admin.',
+      data: { id: newUser.id, email: newUser.email, status: newUser.status }
+    });
+  } catch (err) {
+    if (err?.code === 'P2002') {
+      const field = err.meta?.target?.includes('email') ? 'Email' : 'NIM';
+      return res.status(400).json({
+        success: false,
+        error: { message: `${field} sudah terdaftar. Gunakan email/NIM lain.` }
+      });
+    }
+    throw err;
+  }
 });
 
 export const login = asyncHandler(async (req, res) => {
@@ -71,53 +85,55 @@ export const login = asyncHandler(async (req, res) => {
   }
 
   // Gamification: Daily Login Logic (berdasarkan calendar day, bukan selisih jam)
+  // B-8: read-modify-write streak/poin non-atomik — dua login paralel (HP +
+  // browser, double-click) keduanya membaca last_active_at yang sama, mencatat
+  // DUA transaksi +10, tapi saldo hanya naik +10 (ledger tidak reconcile).
+  // Kunci baris dengan FOR UPDATE & gunakan increment atomik di dalam transaction.
   const now = new Date();
-  let newStreak = user.streak_days || 0;
-  let newPoints = user.points || 0;
 
-  if (!user.last_active_at) {
-    newStreak = 1;
-    newPoints += 10;
-  } else {
-    const lastActive = new Date(user.last_active_at);
-    const isToday = lastActive.toDateString() === now.toDateString();
+  const loginAward = await prisma.$transaction(async (tx) => {
+    const rows = await tx.$queryRaw`SELECT points, streak_days, last_active_at FROM \`User\` WHERE id = ${user.id} FOR UPDATE`;
+    const current = rows[0];
 
-    if (!isToday) {
-      const yesterday = new Date(now);
-      yesterday.setDate(yesterday.getDate() - 1);
-      const wasYesterday = lastActive.toDateString() === yesterday.toDateString();
+    let newStreak = current.streak_days || 0;
+    let awarded = 0;
 
-      if (wasYesterday) {
-        newStreak += 1; // Login berturut-turut
-      } else {
-        newStreak = 1; // Reset streak, lebih dari 1 hari skip
+    if (!current.last_active_at) {
+      newStreak = 1;
+      awarded = 10;
+    } else {
+      const lastActive = new Date(current.last_active_at);
+      const isToday = lastActive.toDateString() === now.toDateString();
+
+      if (!isToday) {
+        const yesterday = new Date(now);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const wasYesterday = lastActive.toDateString() === yesterday.toDateString();
+
+        newStreak = wasYesterday ? newStreak + 1 : 1;
+        awarded = 10;
       }
-      newPoints += 10;
     }
-  }
 
-  await prisma.user.update({
-    where: { id: user.id },
-    data: {
-      last_active_at: now,
-      streak_days: newStreak,
-      points: newPoints
+    if (awarded > 0) {
+      await tx.$executeRaw`UPDATE \`User\` SET last_active_at = ${now}, streak_days = ${newStreak}, points = points + ${awarded} WHERE id = ${user.id}`;
+      await tx.pointTransaction.create({
+        data: {
+          userId: user.id,
+          type: 'login',
+          amount: awarded,
+          description: 'Login harian'
+        }
+      });
+    } else {
+      // Login di hari yang sama: perbarui last_active_at tanpa poin ganda.
+      await tx.$executeRaw`UPDATE \`User\` SET last_active_at = ${now} WHERE id = ${user.id}`;
     }
+
+    return { newStreak, newPoints: (current.points || 0) + awarded };
   });
 
-  // Catat transaksi poin jika ada penambahan (+10 login)
-  if (newPoints > (user.points || 0)) {
-    await prisma.pointTransaction.create({
-      data: {
-        userId: user.id,
-        type: 'login',
-        amount: 10,
-        description: 'Login harian'
-      }
-    });
-  }
-
-  await checkStreakBadges(user.id, newStreak);
+  await checkStreakBadges(user.id, loginAward.newStreak);
   await checkTop10Badge(user.id);
 
   const token = jwt.sign(
@@ -137,8 +153,8 @@ export const login = asyncHandler(async (req, res) => {
         full_name: user.full_name,
         role: user.role,
         status: user.status,
-        points: newPoints,
-        streak_days: newStreak,
+        points: loginAward.newPoints,
+        streak_days: loginAward.newStreak,
         program_studi: user.program_studi,
         avatar_url: user.avatar_url,
         bio: user.bio
@@ -191,12 +207,15 @@ export const changePassword = asyncHandler(async (req, res) => {
   }
 
   const password_hash = await bcrypt.hash(newPassword, 10);
+
+  // B-5: catat waktu perubahan password agar semua token JWT lama (yang dibuat
+  // sebelum ini) otomatis ditolak oleh middleware authenticate.
   await prisma.user.update({
     where: { id: user.id },
-    data: { password_hash }
+    data: { password_hash, password_changed_at: new Date() }
   });
 
-  res.json({ success: true, message: 'Password berhasil diubah' });
+  res.json({ success: true, message: 'Password berhasil diubah. Sesi lain akan keluar otomatis.' });
 });
 
 export const getLeaderboard = asyncHandler(async (req, res) => {
@@ -303,10 +322,14 @@ export const resetPassword = asyncHandler(async (req, res) => {
 
   const password_hash = await bcrypt.hash(password, 10);
 
+  // B-5: invalidasi semua token yang diterbitkan sebelum reset password.
+  const password_changed_at = new Date();
+
   await prisma.user.update({
     where: { id: user.id },
     data: {
       password_hash,
+      password_changed_at,
       reset_token: null,
       reset_token_expiry: null
     }
@@ -509,35 +532,45 @@ export const adjustUserPoints = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { amount, description } = req.body;
 
-  const user = await prisma.user.findUnique({ where: { id } });
-  if (!user) {
+  // B-7: clamp poin dari read di luar transaction → race condition: dua
+  // pengurangan paralel membaca poin yang sama lalu keduanya decrement → poin
+  // bisa negatif. Kunci baris dengan FOR UPDATE & clamp di dalam transaction.
+  const result = await prisma.$transaction(async (tx) => {
+    const rows = await tx.$queryRaw`SELECT points, full_name FROM \`User\` WHERE id = ${id} FOR UPDATE`;
+    const current = rows[0];
+    if (!current) return null;
+
+    // Jangan sampai poin jadi negatif
+    const finalAmount = amount < 0 ? -Math.min(Math.abs(amount), current.points) : amount;
+    if (finalAmount === 0) {
+      return { zero: true, full_name: current.full_name };
+    }
+
+    await tx.$executeRaw`UPDATE \`User\` SET points = points + ${finalAmount} WHERE id = ${id}`;
+    await tx.pointTransaction.create({
+      data: { userId: id, type: 'admin', amount: finalAmount, description }
+    });
+
+    return { finalAmount, full_name: current.full_name };
+  });
+
+  if (!result) {
     return res.status(404).json({ success: false, error: { message: 'User tidak ditemukan' } });
   }
-
-  // Jangan sampai poin jadi negatif
-  const finalAmount = amount < 0 ? -Math.min(Math.abs(amount), user.points) : amount;
-  if (finalAmount === 0) {
+  if (result.zero) {
     return res.status(400).json({ success: false, error: { message: 'Poin user sudah 0, tidak bisa dikurangi lagi' } });
   }
 
-  await prisma.user.update({
-    where: { id },
-    data: { points: { increment: finalAmount } }
-  });
-
-  await prisma.pointTransaction.create({
-    data: { userId: id, type: 'admin', amount: finalAmount, description }
-  });
-
+  // B-11: tipe notifikasi salah — pakai 'points_adjusted', bukan 'account_approved'.
   await createNotification({
     userId: id,
-    type: 'account_approved',
-    message: finalAmount > 0
-      ? `Kamu mendapat ${finalAmount} poin dari admin: ${description}`
-      : `${Math.abs(finalAmount)} poin kamu dikurangi admin: ${description}`
+    type: 'points_adjusted',
+    message: result.finalAmount > 0
+      ? `Kamu mendapat ${result.finalAmount} poin dari admin: ${description}`
+      : `${Math.abs(result.finalAmount)} poin kamu dikurangi admin: ${description}`
   });
 
-  res.json({ success: true, message: `Poin ${user.full_name} berhasil disesuaikan (${finalAmount > 0 ? '+' : ''}${finalAmount})` });
+  res.json({ success: true, message: `Poin ${result.full_name} berhasil disesuaikan (${result.finalAmount > 0 ? '+' : ''}${result.finalAmount})` });
 });
 
 export const deleteUser = asyncHandler(async (req, res) => {
@@ -555,11 +588,17 @@ export const deleteUser = asyncHandler(async (req, res) => {
     });
   }
 
-  // Defensif: bersihkan relasi yang mungkin ada (harusnya kosong untuk user pending)
-  await prisma.notification.deleteMany({ where: { userId: id } });
-  await prisma.userBadge.deleteMany({ where: { userId: id } });
-  await prisma.pointTransaction.deleteMany({ where: { userId: id } });
-  await prisma.user.delete({ where: { id } });
+  // B-13: cascade harus transaksional dan lengkap. Versi lama sequential &
+  // melewatkan enrollment + quizAttempt — kalau gagal di tengah, user hilang
+  // tapi relasinya jadi yatim (foreign key menunjuk ke user yang tidak ada).
+  await prisma.$transaction(async (tx) => {
+    await tx.notification.deleteMany({ where: { userId: id } });
+    await tx.userBadge.deleteMany({ where: { userId: id } });
+    await tx.pointTransaction.deleteMany({ where: { userId: id } });
+    await tx.quizAttempt.deleteMany({ where: { userId: id } });
+    await tx.enrollment.deleteMany({ where: { userId: id } });
+    await tx.user.delete({ where: { id } });
+  });
 
   res.json({ success: true, message: `User ${user.full_name} berhasil dihapus permanen` });
 });
