@@ -29,12 +29,22 @@ const PORT = process.env.PORT || 3000;
 // user legit kena "Terlalu banyak percobaan", attacker malah aman.
 app.set('trust proxy', 1);
 
-// B-17 (LOW): Batasi CORS ke FRONTEND_URL yang diketahui. Di development izinkan
-// origin Vite/Next lokal; di production hanya FRONTEND_URL dari env.
-const corsOrigin = process.env.FRONTEND_URL
-  ? process.env.FRONTEND_URL.replace(/\/+$/, '')
-  : true;
-app.use(cors({ origin: corsOrigin, credentials: true }));
+// B-17 (LOW): Batasi CORS ke FRONTEND_URL yang diketahui. Header Access-Control-Allow-Origin
+// hanya dikirim bila origin request cocok persis — browser menolak baca response
+// dari origin lain. Di development (tanpa FRONTEND_URL) izinkan origin Vite/Next lokal.
+const allowedFrontendOrigin = process.env.FRONTEND_URL?.replace(/\/+$/, '') || null;
+app.use(
+  cors({
+    origin: (origin, cb) => {
+      if (!origin || !allowedFrontendOrigin || origin === allowedFrontendOrigin) {
+        cb(null, true);
+      } else {
+        cb(null, false);
+      }
+    },
+    credentials: true,
+  }),
+);
 
 // contentSecurityPolicy dimatikan agar tidak mematahkan asset SPA (Vite/MUI emotion inline styles);
 // header lain (X-Frame-Options, X-Content-Type-Options, HSTS, dll) tetap aktif.
