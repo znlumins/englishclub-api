@@ -14,6 +14,7 @@ import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 import GroupsIcon from '@mui/icons-material/Groups';
 import Brand from '../components/Brand';
 import SkillTicker from '../components/SkillTicker';
+import { useAuth } from '../context/AuthContext';
 
 const CARD_HOVER_SX = {
   transition: 'transform 200ms ease-out, box-shadow 200ms ease-out',
@@ -39,7 +40,7 @@ const STEPS = [
   },
   {
     title: 'Kumpulkan Poin',
-    description: 'Login harian, enroll, dan kuis memberi poin — pantau posisimu di leaderboard.',
+    description: 'Login harian, enroll, dan kuis memberi poin — pantau posisimu di papan peringkat.',
   },
 ];
 
@@ -61,7 +62,7 @@ const BENEFITS = [
   },
   {
     icon: <GroupsIcon />,
-    title: 'Leaderboard Komunitas',
+    title: 'Papan Peringkat Komunitas',
     description: 'Bersaing sehat dengan member lain dan lihat peringkatmu secara real-time.',
   },
 ];
@@ -69,20 +70,184 @@ const BENEFITS = [
 const [FEATURED_BENEFIT, ...OTHER_BENEFITS] = BENEFITS;
 
 export default function LandingPage() {
+  const { isAuthenticated } = useAuth();
+
   return (
     <Box>
       <AppBar position="sticky" color="transparent">
-        <Toolbar sx={{ justifyContent: 'space-between' }}>
-          <Brand />
-          <Stack direction="row" spacing={1.5}>
-            <Button component={RouterLink} to="/login" variant="outlined">
-              Log in
-            </Button>
-            <Button component={RouterLink} to="/register" variant="contained">
-              Sign up
-            </Button>
-          </Stack>
-        </Toolbar>
+        {/* impeccable-variants-start 7cbb6e70 */}
+        <div data-impeccable-variants="7cbb6e70" data-impeccable-variant-count="3" style={{ display: 'contents' }}>
+          {/* Variants: insert below this line */}
+          <div
+            data-impeccable-variant="1"
+            data-impeccable-params='[{"id":"tint","kind":"steps","default":"lembut","label":"Intensitas warna","options":[{"value":"lembut","label":"Lembut"},{"value":"penuh","label":"Penuh"}]}]'
+          >
+            <Toolbar
+              sx={{
+                justifyContent: 'space-between',
+                bgcolor: 'primary.light',
+                borderBottom: 1,
+                borderColor: 'divider',
+                transition: 'background-color 200ms ease-out',
+                ['[data-p-tint="penuh"] &']: {
+                  bgcolor: 'primary.main',
+                  borderBottomColor: 'primary.dark',
+                },
+              }}
+            >
+              <Box
+                sx={{
+                  display: 'flex',
+                  '& .MuiTypography-root': {
+                    transition: 'color 200ms ease-out',
+                    ['[data-p-tint="penuh"] &']: { color: 'primary.contrastText' },
+                  },
+                }}
+              >
+                <Brand />
+              </Box>
+              <Stack direction="row" spacing={1.5}>
+                {isAuthenticated ? (
+                  <Button component={RouterLink} to="/dashboard" variant="contained">
+                    Ke Beranda
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      component={RouterLink}
+                      to="/login"
+                      variant="text"
+                      sx={{
+                        color: 'primary.dark',
+                        ['[data-p-tint="penuh"] &']: { color: 'primary.contrastText' },
+                      }}
+                    >
+                      Masuk
+                    </Button>
+                    <Button
+                      component={RouterLink}
+                      to="/register"
+                      variant="contained"
+                      sx={{
+                        ['[data-p-tint="penuh"] &']: {
+                          bgcolor: 'background.paper',
+                          color: 'primary.main',
+                        },
+                      }}
+                    >
+                      Daftar
+                    </Button>
+                  </>
+                )}
+              </Stack>
+            </Toolbar>
+          </div>
+          <div
+            data-impeccable-variant="2"
+            style={{ display: 'none' }}
+            data-impeccable-params='[{"id":"cta","kind":"steps","default":"standar","label":"Ukuran CTA","options":[{"value":"standar","label":"Standar"},{"value":"besar","label":"Besar"}]},{"id":"bar","kind":"steps","default":"ringkas","label":"Ketinggian bar","options":[{"value":"ringkas","label":"Ringkas"},{"value":"lapang","label":"Lapang"}]}]'
+          >
+            <Toolbar
+              sx={{
+                justifyContent: 'space-between',
+                bgcolor: 'background.paper',
+                borderBottom: 1,
+                borderColor: 'divider',
+                py: { xs: 1, md: 1.5 },
+                ['[data-p-bar="lapang"] &']: { py: { xs: 1.5, md: 2.5 } },
+              }}
+            >
+              <Brand />
+              <Stack direction="row" spacing={1.5}>
+                {isAuthenticated ? (
+                  <Button component={RouterLink} to="/dashboard" variant="contained">
+                    Ke Beranda
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      component={RouterLink}
+                      to="/login"
+                      variant="text"
+                      sx={{ fontWeight: 600, color: 'text.primary' }}
+                    >
+                      Masuk
+                    </Button>
+                    <Button
+                      component={RouterLink}
+                      to="/register"
+                      variant="contained"
+                      sx={{
+                        boxShadow: '0 8px 20px -8px rgba(79, 70, 229, 0.45)',
+                        ['[data-p-cta="besar"] &']: {
+                          px: 3.2,
+                          py: 1.2,
+                          boxShadow: '0 12px 28px -10px rgba(79, 70, 229, 0.55)',
+                        },
+                      }}
+                    >
+                      Daftar
+                    </Button>
+                  </>
+                )}
+              </Stack>
+            </Toolbar>
+          </div>
+          <div
+            data-impeccable-variant="3"
+            style={{ display: 'none' }}
+            data-impeccable-params='[{"id":"float","kind":"steps","default":"melayang","label":"Posisi","options":[{"value":"tempel","label":"Tempel di atas"},{"value":"melayang","label":"Melayang"}]},{"id":"elev","kind":"steps","default":"halus","label":"Elevasi","options":[{"value":"halus","label":"Halus"},{"value":"tinggi","label":"Tinggi"}]}]'
+          >
+            <Toolbar sx={{ justifyContent: 'space-between' }}>
+              <Box
+                sx={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  bgcolor: 'background.paper',
+                  borderRadius: '999px',
+                  px: 2.5,
+                  py: 1,
+                  my: 1.5,
+                  boxShadow: '0 4px 16px rgba(15, 23, 42, 0.08)',
+                  transition: 'box-shadow 200ms ease-out, margin 200ms ease-out, border-radius 200ms ease-out',
+                  ['[data-p-float="tempel"] &']: {
+                    borderRadius: 0,
+                    my: 0,
+                    px: 3,
+                    py: 1.5,
+                    boxShadow: 'none',
+                    borderBottom: 1,
+                    borderColor: 'divider',
+                  },
+                  ['[data-p-elev="tinggi"] &']: {
+                    boxShadow: '0 16px 40px -12px rgba(15, 23, 42, 0.22)',
+                  },
+                }}
+              >
+                <Brand />
+                <Stack direction="row" spacing={1.5}>
+                  {isAuthenticated ? (
+                    <Button component={RouterLink} to="/dashboard" variant="contained">
+                      Ke Beranda
+                    </Button>
+                  ) : (
+                    <>
+                      <Button component={RouterLink} to="/login" variant="text">
+                        Masuk
+                      </Button>
+                      <Button component={RouterLink} to="/register" variant="contained">
+                        Daftar
+                      </Button>
+                    </>
+                  )}
+                </Stack>
+              </Box>
+            </Toolbar>
+          </div>
+        </div>
+        {/* impeccable-variants-end 7cbb6e70 */}
       </AppBar>
 
       <Box
@@ -112,12 +277,20 @@ export default function LandingPage() {
             secara profesional bersama English Club Vokasi UB.
           </Typography>
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ justifyContent: 'center' }}>
-            <Button component={RouterLink} to="/register" variant="contained" size="large">
-              Mulai Belajar Sekarang
-            </Button>
-            <Button component={RouterLink} to="/login" variant="outlined" size="large">
-              Log in
-            </Button>
+            {isAuthenticated ? (
+              <Button component={RouterLink} to="/dashboard" variant="contained" size="large">
+                Lanjut Belajar
+              </Button>
+            ) : (
+              <>
+                <Button component={RouterLink} to="/register" variant="contained" size="large">
+                  Mulai Belajar Sekarang
+                </Button>
+                <Button component={RouterLink} to="/login" variant="outlined" size="large">
+                  Masuk
+                </Button>
+              </>
+            )}
           </Stack>
         </Container>
       </Box>

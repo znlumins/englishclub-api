@@ -1,5 +1,5 @@
-import { useState, type FormEvent } from 'react';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { useEffect, useState, type FormEvent } from 'react';
+import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
@@ -18,9 +18,18 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [pendingError, setPendingError] = useState(false);
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
+  const fromPath =
+    (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ?? '/dashboard';
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate(fromPath.startsWith('/') ? fromPath : '/dashboard', { replace: true });
+    }
+  }, [isAuthenticated, fromPath, navigate]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -29,7 +38,8 @@ export default function LoginPage() {
     const result = await login(email, password);
     setSubmitting(false);
     if (result.ok) {
-      navigate('/dashboard');
+      const target = fromPath.startsWith('/') && fromPath !== '/login' ? fromPath : '/dashboard';
+      navigate(target, { replace: true });
     } else {
       const msg = result.message ?? '';
       if (msg.includes(PENDING_APPROVAL_MSG)) {
@@ -49,7 +59,7 @@ export default function LoginPage() {
       panelHighlights={[
         'Akses materi kapan saja',
         'Kerjakan kuis & lihat skor otomatis',
-        'Pantau peringkatmu di leaderboard',
+        'Pantau peringkatmu di papan peringkat',
       ]}
       footer={
         <Typography variant="body2">
@@ -103,8 +113,13 @@ export default function LoginPage() {
           fullWidth
         />
         <Button type="submit" variant="contained" size="large" disabled={submitting}>
-          {submitting ? 'Memproses...' : 'Log in'}
+          {submitting ? 'Memproses...' : 'Masuk'}
         </Button>
+        <Typography variant="body2" sx={{ textAlign: 'center' }}>
+          <Link component={RouterLink} to="/forgot-password" underline="hover" sx={{ color: 'text.secondary' }}>
+            Lupa password?
+          </Link>
+        </Typography>
       </Stack>
     </AuthLayout>
   );

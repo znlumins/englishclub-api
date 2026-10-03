@@ -11,6 +11,8 @@ import AppShell from './components/AppShell';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import PendingApprovalPage from './pages/PendingApprovalPage';
 import DashboardPage from './pages/DashboardPage';
 import ClassesPage from './pages/ClassesPage';
@@ -21,6 +23,7 @@ import ProfilePage from './pages/ProfilePage';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import AdminClassPage from './pages/admin/AdminClassPage';
 import AdminUsersPage from './pages/admin/AdminUsersPage';
+import NotFoundPage from './pages/NotFoundPage';
 
 export default function App() {
   return (
@@ -34,6 +37,8 @@ export default function App() {
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                <Route path="/reset-password" element={<ResetPasswordPage />} />
                 <Route path="/pending-approval" element={<PendingApprovalPage />} />
 
                 <Route element={<ProtectedRoute />}>
@@ -55,6 +60,8 @@ export default function App() {
                     </Route>
                   </Route>
                 </Route>
+
+                <Route path="*" element={<NotFoundPage />} />
               </Routes>
             </AuthProvider>
           </BrowserRouter>

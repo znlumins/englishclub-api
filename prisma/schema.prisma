@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -13,7 +13,7 @@ model User {
   password_hash String
   nim           String    @unique
   full_name     String
-  role          String    @default("member") // 'admin', 'mentor', 'member'
+  role          String    @default("member") // 'admin', 'instructor', 'member'
   status        String    @default("pending") // 'pending', 'active', 'blocked'
   avatar_url    String?
   bio           String?
@@ -23,11 +23,16 @@ model User {
   points        Int       @default(0)
   streak_days   Int       @default(0)
   last_active_at DateTime?
+  reset_token   String?   @unique
+  reset_token_expiry DateTime?
   created_at    DateTime  @default(now())
   updated_at    DateTime  @updatedAt
   classesTaught Class[]      @relation("InstructorClasses")
   enrollments   Enrollment[]
   quizAttempts  QuizAttempt[]
+  pointTransactions PointTransaction[]
+  notifications Notification[]
+  badges        UserBadge[]
 }
 
 model Class {
@@ -54,6 +59,7 @@ model Enrollment {
   class         Class     @relation(fields: [classId], references: [id])
 
   @@unique([userId, classId])
+  @@index([classId])
 }
 
 model Material {
@@ -65,17 +71,23 @@ model Material {
   created_at    DateTime  @default(now())
 
   class         Class     @relation(fields: [classId], references: [id])
+
+  @@index([classId])
 }
 
 model Quiz {
   id          String   @id @default(uuid())
   title       String
   classId     String
+  max_attempts Int?    // null = unlimited, default 3 diterapkan di controller untuk quiz baru
   created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
 
   class       Class    @relation(fields: [classId], references: [id])
   questions   Question[]
   attempts    QuizAttempt[]
+
+  @@index([classId])
 }
 
 model Question {
@@ -87,6 +99,8 @@ model Question {
   created_at     DateTime @default(now())
 
   quiz           Quiz     @relation(fields: [quizId], references: [id])
+
+  @@index([quizId])
 }
 
 model QuizAttempt {
@@ -98,4 +112,44 @@ model QuizAttempt {
 
   quiz        Quiz     @relation(fields: [quizId], references: [id])
   user        User     @relation(fields: [userId], references: [id])
+
+  @@index([quizId, userId])
+}
+
+model PointTransaction {
+  id          String   @id @default(uuid())
+  userId      String
+  type        String   // 'enroll', 'quiz', 'login', 'admin'
+  amount      Int      // positif = gain, negatif = deduction
+  description String
+  created_at  DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@index([userId, created_at])
+}
+
+model Notification {
+  id          String   @id @default(uuid())
+  userId      String
+  type        String   // 'account_approved', 'account_blocked', 'new_material', 'new_quiz', 'badge_earned'
+  message     String
+  link        String?
+  read        Boolean  @default(false)
+  created_at  DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@index([userId, read, created_at])
+}
+
+model UserBadge {
+  id          String   @id @default(uuid())
+  userId      String
+  badgeKey    String   // e.g. 'streak-7', 'quiz-master', 'class-collector', 'top-10'
+  earned_at   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, badgeKey])
 }

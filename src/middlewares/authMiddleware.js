@@ -1,19 +1,50 @@
 import jwt from 'jsonwebtoken';
+import { PrismaClient } from '@prisma/client';
 
-export const authenticate = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ success: false, error: { message: 'Unauthorized: No token provided' } });
-  }
+const prisma = new PrismaClient();
 
-  const token = authHeader.split(' ')[1];
-
+export const authenticate = async (req, res, next) => {
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
-    req.user = decoded;
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ success: false, error: { message: 'Unauthorized: No token provided' } });
+    }
+
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret || jwtSecret === 'your-super-secret-key-change-this-in-production') {
+      return res.status(500).json({ success: false, error: { message: 'Server configuration error: JWT_SECRET not set' } });
+    }
+
+    const token = authHeader.split(' ')[1];
+
+    let decoded;
+    try {
+      decoded = jwt.verify(token, jwtSecret);
+    } catch (error) {
+      return res.status(401).json({ success: false, error: { message: 'Unauthorized: Invalid or expired token' } });
+    }
+
+    // Token berlaku 30 hari — jangan percaya role/status yang di-bake saat login,
+    // ambil ulang dari DB supaya user yang diblokir/diturunkan rolenya langsung ditolak.
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.id },
+      select: { id: true, email: true, role: true, status: true }
+    });
+
+    if (!user) {
+      return res.status(401).json({ success: false, error: { message: 'Unauthorized: User tidak ditemukan' } });
+    }
+    if (user.status === 'blocked') {
+      return res.status(403).json({ success: false, error: { message: 'Akun Anda telah diblokir' } });
+    }
+    if (user.status === 'pending') {
+      return res.status(403).json({ success: false, error: { message: 'Akun Anda masih menunggu persetujuan admin' } });
+    }
+
+    req.user = user;
     next();
-  } catch (error) {
-    return res.status(401).json({ success: false, error: { message: 'Unauthorized: Invalid or expired token' } });
+  } catch (err) {
+    next(err);
   }
 };
 

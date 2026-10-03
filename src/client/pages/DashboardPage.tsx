@@ -16,24 +16,33 @@ import type { ClassSummary, UserDTO } from '../api/types';
 import StatCard from '../components/StatCard';
 import PageLoader from '../components/PageLoader';
 import EmptyState from '../components/EmptyState';
+import LoadError from '../components/LoadError';
 
 export default function DashboardPage() {
   const { user, updateUser } = useAuth();
   const [myClasses, setMyClasses] = useState<ClassSummary[] | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const load = () => {
+    setLoadError(null);
+    setMyClasses(null);
     api.get<UserDTO>('/auth/me').then((res) => {
       if (res.success) updateUser(res.data);
     });
     api.get<ClassSummary[]>('/classes/my').then((res) => {
       if (res.success) setMyClasses(res.data);
+      else setLoadError(res.error.message);
     });
+  };
+
+  useEffect(() => {
+    load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <Box>
-      <Typography variant="overline">Dashboard</Typography>
+      <Typography variant="overline">Beranda</Typography>
       <Typography variant="h2" sx={{ mb: 4 }}>
         Halo, {user?.full_name ?? 'Member'}
       </Typography>
@@ -53,16 +62,18 @@ export default function DashboardPage() {
         Kelas Saya
       </Typography>
 
-      {myClasses === null && <PageLoader />}
+      {myClasses === null && !loadError && <PageLoader />}
+
+      {loadError && <LoadError title="Gagal memuat kelas" message={loadError} onRetry={load} />}
 
       {myClasses !== null && myClasses.length === 0 && (
         <EmptyState
           icon={<MenuBookIcon />}
           title="Belum ada kelas"
-          description="Kamu belum mendaftar ke kelas mana pun. Jelajahi katalog untuk mulai belajar."
+          description="Mulai dengan mendaftar ke kelas di katalog. Enroll memberi +50 poin!"
           action={
-            <Button component={RouterLink} to="/classes" variant="contained">
-              Lihat Katalog Kelas
+            <Button component={RouterLink} to="/classes" variant="contained" size="large">
+              Jelajahi Katalog Kelas
             </Button>
           }
         />
@@ -78,8 +89,13 @@ export default function DashboardPage() {
                     {cls.name}
                   </Typography>
                   <Typography variant="body2">
-                    Instructor: {cls.instructor?.full_name ?? '-'}
+                    Instruktur: {cls.instructor?.full_name ?? '-'}
                   </Typography>
+                  {cls._count?.materials != null && (
+                    <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 0.5 }}>
+                      {cls._count.materials} materi tersedia
+                    </Typography>
+                  )}
                 </CardContent>
               </CardActionArea>
             </Card>

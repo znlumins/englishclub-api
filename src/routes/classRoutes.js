@@ -13,7 +13,10 @@ import {
   deleteMaterial,
   getMyClasses,
   getManagedClasses,
-  getClassMembers
+  getClassMembers,
+  removeMember,
+  unenrollClass,
+  getClassLeaderboard
 } from '../controllers/classController.js';
 
 const router = express.Router();
@@ -26,12 +29,15 @@ router.get('/my', authenticate, getMyClasses);
 router.get('/managed', authenticate, getManagedClasses);
 router.get('/:id', authenticate, getClassDetail);
 router.post('/:id/enroll', authenticate, enrollClass);
+router.delete('/:id/enroll', authenticate, unenrollClass);
+router.get('/:id/leaderboard', authenticate, getClassLeaderboard);
 
 // Materials
 router.post('/:id/materials', authenticate, authorize('admin', 'instructor'), validate(schemas.addMaterial), addMaterial);
 router.put('/:id/materials/:materialId', authenticate, authorize('admin', 'instructor'), validate(schemas.updateMaterial), updateMaterial);
 router.delete('/:id/materials/:materialId', authenticate, authorize('admin', 'instructor'), deleteMaterial);
 
-router.get('/:id/members', authenticate, getClassMembers);
+router.get('/:id/members', authenticate, authorize('admin', 'instructor'), getClassMembers);
+router.delete('/:id/members/:userId', authenticate, authorize('admin', 'instructor'), removeMember);
 
 export default router;

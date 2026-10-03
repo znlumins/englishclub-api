@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
@@ -13,6 +13,9 @@ import IconButton from '@mui/material/IconButton';
 import Avatar from '@mui/material/Avatar';
 import Divider from '@mui/material/Divider';
 import Button from '@mui/material/Button';
+import Badge from '@mui/material/Badge';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -23,20 +26,25 @@ import PersonIcon from '@mui/icons-material/Person';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import GroupIcon from '@mui/icons-material/Group';
 import LogoutIcon from '@mui/icons-material/Logout';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import CloseIcon from '@mui/icons-material/Close';
 import { useAuth } from '../context/AuthContext';
+import { useConfirm } from '../context/ConfirmContext';
+import { api } from '../api/client';
+import type { NotificationDTO } from '../api/types';
 import Brand from './Brand';
 
 const DRAWER_WIDTH = 260;
 
 const NAV_LINKS = [
-  { to: '/dashboard', label: 'Dashboard', icon: <DashboardIcon /> },
+  { to: '/dashboard', label: 'Beranda', icon: <DashboardIcon /> },
   { to: '/classes', label: 'Katalog Kelas', icon: <ClassIcon /> },
-  { to: '/leaderboard', label: 'Leaderboard', icon: <EmojiEventsIcon /> },
+  { to: '/leaderboard', label: 'Papan Peringkat', icon: <EmojiEventsIcon /> },
   { to: '/profile', label: 'Profil', icon: <PersonIcon /> },
 ];
 
-const ADMIN_LINKS = [{ to: '/admin', label: 'Kelola Course', icon: <AdminPanelSettingsIcon /> }];
-const ADMIN_ONLY_LINKS = [{ to: '/admin/users', label: 'Kelola Users', icon: <GroupIcon /> }];
+const ADMIN_LINKS = [{ to: '/admin', label: 'Kelola Kursus', icon: <AdminPanelSettingsIcon /> }];
+const ADMIN_ONLY_LINKS = [{ to: '/admin/users', label: 'Kelola Pengguna', icon: <GroupIcon /> }];
 
 export default function AppShell() {
   const theme = useTheme();
@@ -44,11 +52,144 @@ export default function AppShell() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, isAdminOrInstructor, isAdmin, logout } = useAuth();
   const navigate = useNavigate();
+  const confirm = useConfirm();
 
-  const handleLogout = () => {
+  const [notifications, setNotifications] = useState<NotificationDTO[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [notifAnchor, setNotifAnchor] = useState<null | HTMLElement>(null);
+
+  const loadNotifications = () => {
+    api.get<{ notifications: NotificationDTO[]; unreadCount: number }>('/auth/notifications').then((res) => {
+      if (res.success) {
+        setNotifications(res.data.notifications);
+        setUnreadCount(res.data.unreadCount);
+      }
+    });
+  };
+
+  useEffect(() => {
+    loadNotifications();
+    const interval = setInterval(loadNotifications, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleNotificationClick = async (notification: NotificationDTO) => {
+    setNotifAnchor(null);
+    if (!notification.read) {
+      await api.put(`/auth/notifications/${notification.id}/read`);
+      loadNotifications();
+    }
+    if (notification.link) navigate(notification.link);
+  };
+
+  const handleMarkAllRead = async () => {
+    await api.put('/auth/notifications/read-all');
+    loadNotifications();
+  };
+
+  const handleDeleteNotification = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    await api.delete(`/auth/notifications/${id}`);
+    loadNotifications();
+  };
+
+  const handleClearRead = async () => {
+    await api.delete('/auth/notifications/read');
+    loadNotifications();
+  };
+
+  const handleLogout = async () => {
+    const ok = await confirm({
+      title: 'Keluar',
+      message: 'Yakin ingin keluar dari akun ini?',
+      confirmText: 'Ya, Keluar',
+    });
+    if (!ok) return;
     logout();
     navigate('/');
   };
+
+  const notificationBell = (
+    <>
+      <IconButton onClick={(e) => setNotifAnchor(e.currentTarget)} aria-label="Notifikasi">
+        <Badge badgeContent={unreadCount} color="error" max={99}>
+          <NotificationsIcon />
+        </Badge>
+      </IconButton>
+      <Menu
+        anchorEl={notifAnchor}
+        open={Boolean(notifAnchor)}
+        onClose={() => setNotifAnchor(null)}
+        slotProps={{ paper: { sx: { width: 340, maxHeight: 420 } } }}
+      >
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', px: 2, py: 1 }}>
+          <Typography variant="subtitle2">Notifikasi</Typography>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            {notifications.some((n) => n.read) && (
+              <Button size="small" onClick={handleClearRead}>
+                Bersihkan yang dibaca
+              </Button>
+            )}
+            {unreadCount > 0 && (
+              <Button size="small" onClick={handleMarkAllRead}>
+                Tandai semua dibaca
+              </Button>
+            )}
+          </Box>
+        </Box>
+        <Divider />
+        {notifications.length === 0 && (
+          <Box sx={{ px: 2, py: 3, textAlign: 'center' }}>
+            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+              Belum ada notifikasi
+            </Typography>
+          </Box>
+        )}
+        {notifications.map((n) => (
+          <MenuItem
+            key={n.id}
+            onClick={() => handleNotificationClick(n)}
+            sx={{
+              whiteSpace: 'normal',
+              alignItems: 'flex-start',
+              bgcolor: n.read ? 'transparent' : 'primary.light',
+              py: 1.25,
+              pr: 5,
+              position: 'relative',
+            }}
+          >
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="body2" sx={{ fontWeight: n.read ? 400 : 600 }}>
+                {n.message}
+                {!n.read && (
+                  <Typography component="span" variant="caption" sx={{ ml: 1, color: 'primary.main', fontWeight: 700 }}>
+                    Baru
+                  </Typography>
+                )}
+              </Typography>
+              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                {new Date(n.created_at).toLocaleString('id-ID')}
+              </Typography>
+            </Box>
+            <IconButton
+              size="small"
+              onClick={(e) => handleDeleteNotification(e, n.id)}
+              aria-label="Hapus notifikasi"
+              sx={{
+                position: 'absolute',
+                right: 4,
+                top: 4,
+                opacity: 0.5,
+                '&:hover': { opacity: 1 },
+              }}
+            >
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          </MenuItem>
+        ))}
+      </Menu>
+    </>
+  );
 
   const navItem = (link: { to: string; label: string; icon: React.ReactNode }) => (
     <ListItemButton
@@ -116,7 +257,7 @@ export default function AppShell() {
           onClick={handleLogout}
           size="small"
         >
-          Logout
+          Keluar
         </Button>
       </Box>
     </Box>
@@ -127,10 +268,12 @@ export default function AppShell() {
       {isMobile && (
         <AppBar position="fixed" sx={{ zIndex: (t) => t.zIndex.drawer + 1 }}>
           <Toolbar>
-            <IconButton edge="start" onClick={() => setMobileOpen(true)} sx={{ mr: 1 }}>
+            <IconButton edge="start" onClick={() => setMobileOpen(true)} sx={{ mr: 1 }} aria-label="Buka menu">
               <MenuIcon />
             </IconButton>
             <Brand size={28} />
+            <Box sx={{ flexGrow: 1 }} />
+            {notificationBell}
           </Toolbar>
         </AppBar>
       )}
@@ -161,6 +304,9 @@ export default function AppShell() {
           p: { xs: 2, md: 4 },
         }}
       >
+        {!isMobile && (
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>{notificationBell}</Box>
+        )}
         <Outlet />
       </Box>
     </Box>

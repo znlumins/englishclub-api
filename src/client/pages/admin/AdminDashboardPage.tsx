@@ -12,6 +12,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import TextField from '@mui/material/TextField';
+import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -19,36 +20,59 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import PeopleIcon from '@mui/icons-material/People';
 import DescriptionIcon from '@mui/icons-material/Description';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import GroupIcon from '@mui/icons-material/Group';
+import QuizIcon from '@mui/icons-material/Quiz';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 import { useToast } from '../../context/ToastContext';
 import { useConfirm } from '../../context/ConfirmContext';
+import { useAuth } from '../../context/AuthContext';
 import { api } from '../../api/client';
-import type { ClassSummary } from '../../api/types';
+import type { AdminStats, ClassSummary, PaginatedUsers, UserDTO } from '../../api/types';
 import PageLoader from '../../components/PageLoader';
 import EmptyState from '../../components/EmptyState';
+import LoadError from '../../components/LoadError';
+import StatCard from '../../components/StatCard';
 
 interface ClassFormState {
   id: string | null;
   name: string;
   description: string;
+  instructorId: string;
 }
 
-const EMPTY_FORM: ClassFormState = { id: null, name: '', description: '' };
+const EMPTY_FORM: ClassFormState = { id: null, name: '', description: '', instructorId: '' };
 
 export default function AdminDashboardPage() {
   const { showToast } = useToast();
   const confirm = useConfirm();
+  const { isAdmin } = useAuth();
   const [classes, setClasses] = useState<ClassSummary[] | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [stats, setStats] = useState<AdminStats | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [form, setForm] = useState<ClassFormState>(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
+  const [instructors, setInstructors] = useState<UserDTO[]>([]);
 
   const load = () => {
+    setLoadError(null);
+    setClasses(null);
     api.get<ClassSummary[]>('/classes/managed').then((res) => {
       if (res.success) setClasses(res.data);
+      else setLoadError(res.error.message);
     });
+    if (isAdmin) {
+      api.get<AdminStats>('/admin/stats').then((res) => {
+        if (res.success) setStats(res.data);
+      });
+      api.get<PaginatedUsers>('/auth/users?role=instructor&pageSize=100').then((res) => {
+        if (res.success) setInstructors(res.data.items);
+      });
+    }
   };
 
-  useEffect(load, []);
+  useEffect(load, [isAdmin]);
 
   const openCreate = () => {
     setForm(EMPTY_FORM);
@@ -56,14 +80,15 @@ export default function AdminDashboardPage() {
   };
 
   const openEdit = (cls: ClassSummary) => {
-    setForm({ id: cls.id, name: cls.name, description: cls.description ?? '' });
+    setForm({ id: cls.id, name: cls.name, description: cls.description ?? '', instructorId: cls.instructorId ?? '' });
     setDialogOpen(true);
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setSaving(true);
-    const payload = { name: form.name, description: form.description };
+    const payload: Record<string, unknown> = { name: form.name, description: form.description };
+    if (isAdmin && form.instructorId) payload.instructorId = form.instructorId;
     const res = form.id
       ? await api.put(`/classes/${form.id}`, payload)
       : await api.post('/classes', payload);
@@ -98,15 +123,48 @@ export default function AdminDashboardPage() {
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4, flexWrap: 'wrap', gap: 2 }}>
         <Box>
-          <Typography variant="overline">Khusus Admin/Instructor</Typography>
-          <Typography variant="h2">Kelola Course</Typography>
+          <Typography variant="overline">Khusus Admin/Instruktur</Typography>
+          <Typography variant="h2">Kelola Kursus</Typography>
         </Box>
         <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>
           Buat Kelas
         </Button>
       </Box>
 
-      {classes === null && <PageLoader />}
+      {isAdmin && stats && (
+        <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }, mb: 4 }}>
+          <StatCard icon={<GroupIcon />} label="Total Pengguna" value={stats.users.total} accent="primary" />
+          <StatCard icon={<HourglassEmptyIcon />} label="Menunggu Persetujuan" value={stats.users.pending} accent="warning" />
+          <StatCard icon={<QuizIcon />} label="Total Kuis" value={stats.totalQuizzes} accent="success" />
+          <StatCard icon={<TrendingUpIcon />} label="Tingkat Pengerjaan Kuis" value={`${stats.completionRate}%`} accent="primary" />
+        </Box>
+      )}
+
+      {isAdmin && stats && stats.topClasses.length > 0 && (
+        <Card sx={{ mb: 4 }}>
+          <CardContent sx={{ p: 3 }}>
+            <Typography variant="h4" sx={{ mb: 2 }}>
+              Kelas Terpopuler
+            </Typography>
+            <Stack spacing={1.5}>
+              {stats.topClasses.map((cls, idx) => (
+                <Box key={cls.id} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Typography variant="body2">
+                    {idx + 1}. {cls.name}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                    {cls.enrollments} peserta
+                  </Typography>
+                </Box>
+              ))}
+            </Stack>
+          </CardContent>
+        </Card>
+      )}
+
+      {classes === null && !loadError && <PageLoader />}
+
+      {loadError && <LoadError title="Gagal memuat kelas" message={loadError} onRetry={load} />}
 
       {classes !== null && classes.length === 0 && (
         <EmptyState
@@ -181,6 +239,25 @@ export default function AdminDashboardPage() {
                 rows={3}
                 fullWidth
               />
+              {isAdmin && (
+                <TextField
+                  label="Instruktur"
+                  select
+                  value={form.instructorId}
+                  onChange={(e) => setForm((prev) => ({ ...prev, instructorId: e.target.value }))}
+                  fullWidth
+                  required={!form.id}
+                >
+                  <MenuItem value="">
+                    <em>— Pilih instruktur —</em>
+                  </MenuItem>
+                  {instructors.map((inst) => (
+                    <MenuItem key={inst.id} value={inst.id}>
+                      {inst.full_name} ({inst.nim})
+                    </MenuItem>
+                  ))}
+                </TextField>
+              )}
             </Stack>
           </DialogContent>
           <DialogActions sx={{ px: 3, pb: 3 }}>

@@ -17,6 +17,18 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<ApiR
         ...(options.headers ?? {}),
       },
     });
+
+    // Auto-logout jika token expired / unauthorized
+    if (res.status === 401 && token) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      const currentPath = window.location.pathname;
+      if (currentPath !== '/' && currentPath !== '/login' && currentPath !== '/register') {
+        window.location.href = '/login';
+      }
+      return { success: false, error: { message: 'Sesi berakhir. Silakan login ulang.' } };
+    }
+
     return (await res.json()) as ApiResponse<T>;
   } catch {
     return { success: false, error: { message: 'Gagal terhubung ke server' } };
