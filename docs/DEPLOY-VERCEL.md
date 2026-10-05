@@ -2,10 +2,14 @@
 
 ## Prasyarat
 - Akun [Vercel](https://vercel.com) (login dengan GitHub).
-- Database MySQL yang **bisa diakses publik** dari serverless Vercel:
-  PlanetScale, Railway, Aiven, atau MySQL cloud lainnya.
-  Laragon hanya cocok untuk development lokal — `localhost:3306` tidak
-  terjangkau dari fungsi serverless Vercel.
+- Database **TiDB Cloud Serverless** (drop-in MySQL, cocok dengan Prisma
+  provider `mysql` di repo ini). Daftar di [tidbcloud.com](https://tidbcloud.com),
+  buat cluster Serverless (region bebas, gratis 5GB — cukup untuk klub).
+
+  > Mengapa TiDB, bukan Supabase: schema & seluruh raw SQL di repo ini MySQL
+  > (backtick identifier + `SELECT ... FOR UPDATE`). Supabase adalah Postgres,
+  > jadi raw SQL harus ditulis ulang dan 17 bug fix di lapisan data harus
+  > diverifikasi ulang. TiDB kompatibel apa adanya.
 
 ## Backend (repo ini)
 
@@ -13,25 +17,35 @@
 2. Import ke Vercel (Add New → Project). Vercel membaca `vercel.json`:
    - build: `npx prisma generate`
    - output: serverless function `api/index.js` menangani semua route.
-3. Set Environment Variables (Settings → Environment Variables):
+3. Ambil connection string TiDB: dashboard TiDB → cluster → **Connect** →
+   pilih tab **Prisma**. Set Environment Variables di Vercel:
 
    | Key | Contoh | Wajib |
    |---|---|---|
-   | `DATABASE_URL` | `mysql://user:pass@host:3306/lso_vokasi_ub?charset=utf8mb4` | ✅ |
+   | `DATABASE_URL` | `mysql://user:pass@gateway01.region.prod.aws.tidbcloud.com:4000/lso_vokasi_ub?sslaccept=accept_invalid_certs&charset=utf8mb4` | ✅ |
    | `JWT_SECRET` | hasil `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` | ✅ |
    | `FRONTEND_URL` | `https://englishclub-vokasi.vercel.app` | ✅ |
    | `SMTP_HOST` / `SMTP_USER` / `SMTP_PASS` / `SMTP_FROM` | lihat `.env.example` | opsional (reset password via email) |
 
-4. Deploy. Verifikasi: buka `https://<backend>.vercel.app/health` → harus
-   mengembalikan `{"status":"ok",...}`.
-5. Inisialisasi schema di database baru:
+   Koneksi TiDB butuh TLS. Param `sslaccept=accept_invalid_certs` memakai CA
+   yang sudah ter-install; untuk verifikasi ketat, unduh CA dari dashboard
+   TiDB dan tambahkan `&sslca=/path/isrgrootx1.pem`.
+
+4. Siapkan database (sekali saja, dari mesin lokal dengan `DATABASE_URL`
+   produksi):
 
    ```bash
-   # dari mesin lokal, arahkan ke database produksi
-   DATABASE_URL="mysql://..." npx prisma migrate deploy
+   # Buat database (sys adalah system DB, jangan dipakai)
+   npx prisma db execute --url 'mysql://...@host:4000/test?sslaccept=accept_invalid_certs' --stdin <<'EOF'
+   CREATE DATABASE IF NOT EXISTS lso_vokasi_ub CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+   EOF
+
+   # Terapkan schema
+   npx prisma migrate deploy
    ```
 
-   Buat user admin pertama (lihat catatan di bawah).
+5. Deploy di Vercel. Verifikasi: buka `https://<backend>.vercel.app/health`
+   → harus mengembalikan `{"status":"ok",...}`.
 
 ## Frontend (repo `englishclub`)
 
