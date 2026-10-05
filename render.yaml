@@ -1,18 +1,24 @@
 services:
   - type: web
-    name: lso-vokasi-app
+    name: lso-vokasi-api
     env: node
     buildCommand: npm run build
     startCommand: npm run start
+    healthCheckPath: /health
     envVars:
       - key: DATABASE_URL
         fromDatabase:
-          name: lso-postgres-db
+          name: lso-mysql-db
           property: connectionString
       - key: JWT_SECRET
         generateValue: true
+      - key: FRONTEND_URL
+        value: https://englishclub-vokasi.vercel.app
+      - key: NODE_ENV
+        value: production
 
 databases:
-  - name: lso-postgres-db
-    databaseName: lsodb
+  - name: lso-mysql-db
+    databaseName: lso_vokasi_ub
     user: lso_user
+    ipAllowList: []

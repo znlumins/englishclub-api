@@ -1,0 +1,2 @@
+# Prisma migration lock file for 0_init baseline
+provider = "mysql"
