@@ -1,6 +1,5 @@
-import { PrismaClient } from '@prisma/client';
+import prisma from '../utils/prisma.js';
 
-const prisma = new PrismaClient();
 
 // Notifikasi bersifat best-effort — kegagalannya tidak boleh membuat aksi utama
 // (yang sudah commit ke DB, mis. enroll/submit kuis/tambah materi) tampak gagal ke user.

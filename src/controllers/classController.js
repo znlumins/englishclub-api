@@ -1,9 +1,8 @@
-import { PrismaClient } from '@prisma/client';
+import prisma from '../utils/prisma.js';
 import { asyncHandler } from '../middlewares/errorHandler.js';
 import { createNotificationForMany } from '../utils/notifications.js';
 import { checkClassCollectorBadge, checkTop10Badge } from '../utils/badges.js';
 
-const prisma = new PrismaClient();
 
 // Kurangi poin +50 yang didapat saat enroll (dipakai saat unenroll/dikeluarkan),
 // supaya keluar-masuk kelas tidak jadi celah farming poin. Tidak sampai negatif.

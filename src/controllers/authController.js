@@ -1,13 +1,12 @@
 import crypto from 'crypto';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../utils/prisma.js';
 import { asyncHandler } from '../middlewares/errorHandler.js';
 import { sendMail } from '../utils/mailer.js';
 import { createNotification } from '../utils/notifications.js';
 import { BADGE_CATALOG, checkStreakBadges, checkTop10Badge } from '../utils/badges.js';
 
-const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET;
 
 // Pastikan JWT_SECRET ada

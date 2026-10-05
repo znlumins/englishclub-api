@@ -69,8 +69,11 @@ app.use('/api/v1/auth/reset-password', authLimiter);
 
 const clientDist = path.join(__dirname, '../dist/client');
 
-// Serve built React (Vite) SPA assets
-app.use(express.static(clientDist));
+// Serve built React (Vite) SPA assets — hanya saat self-hosted (Render/Railway).
+// Di Vercel, frontend adalah app Next.js terpisah; dist/ tidak di-build.
+if (process.env.VERCEL !== '1') {
+  app.use(express.static(clientDist));
+}
 
 // Health check endpoint untuk keep-alive service
 app.get('/health', (req, res) => res.status(200).json({ status: 'ok', uptime: process.uptime() }));
@@ -92,6 +95,13 @@ app.use((req, res, next) => {
 // Centralized error handler (must be last)
 app.use(errorHandler);
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on http://0.0.0.0:${PORT}`);
-});
+// Hanya jalankan HTTP server saat dipanggil langsung (development, Render,
+// Railway, dsb). Di Vercel, app diekspor sebagai serverless function dan
+// platform yang mengelola lifecycle — app.listen() di situ akan error.
+if (process.env.VERCEL !== '1') {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on http://0.0.0.0:${PORT}`);
+  });
+}
+
+export default app;

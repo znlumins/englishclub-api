@@ -1,7 +1,6 @@
-import { PrismaClient } from '@prisma/client';
+import prisma from '../utils/prisma.js';
 import { createNotification } from './notifications.js';
 
-const prisma = new PrismaClient();
 
 export const BADGE_CATALOG = {
   'streak-7': { label: 'Streak 7 Hari', description: 'Login 7 hari berturut-turut' },

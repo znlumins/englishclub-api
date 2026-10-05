@@ -1,7 +1,6 @@
-import { PrismaClient } from '@prisma/client';
+import prisma from '../utils/prisma.js';
 import { asyncHandler } from '../middlewares/errorHandler.js';
 
-const prisma = new PrismaClient();
 
 export const getStats = asyncHandler(async (req, res) => {
   const [usersByStatus, totalClasses, totalQuizzes, totalAttempts, topClasses, quizTakers] = await Promise.all([

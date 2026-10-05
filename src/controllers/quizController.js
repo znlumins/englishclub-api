@@ -1,9 +1,8 @@
-import { PrismaClient } from '@prisma/client';
+import prisma from '../utils/prisma.js';
 import { asyncHandler } from '../middlewares/errorHandler.js';
 import { createNotificationForMany } from '../utils/notifications.js';
 import { checkQuizMasterBadge, checkTop10Badge } from '../utils/badges.js';
 
-const prisma = new PrismaClient();
 
 // Create Quiz (Instructor/Admin)
 export const createQuiz = asyncHandler(async (req, res) => {
