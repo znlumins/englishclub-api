@@ -32,15 +32,31 @@ app.set('trust proxy', 1);
 // B-17 (LOW): Batasi CORS ke FRONTEND_URL yang diketahui. Header Access-Control-Allow-Origin
 // hanya dikirim bila origin request cocok persis — browser menolak baca response
 // dari origin lain. Di development (tanpa FRONTEND_URL) izinkan origin Vite/Next lokal.
-const allowedFrontendOrigin = process.env.FRONTEND_URL?.replace(/\/+$/, '') || null;
+const defaultAllowedOrigins = [
+  'https://englishclub-vokasi.vercel.app',
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'http://localhost:4000',
+  'http://localhost:5173',
+];
+const envFrontend = process.env.FRONTEND_URL?.replace(/\/+$/, '');
+const allowedOrigins = new Set(
+  [...defaultAllowedOrigins, ...(envFrontend ? [envFrontend] : [])].filter(Boolean),
+);
+
 app.use(
   cors({
     origin: (origin, cb) => {
-      if (!origin || !allowedFrontendOrigin || origin === allowedFrontendOrigin) {
-        cb(null, true);
-      } else {
-        cb(null, false);
+      if (!origin) return cb(null, true);
+      try {
+        const url = new URL(origin);
+        if (allowedOrigins.has(origin) || url.hostname.endsWith('.vercel.app')) {
+          return cb(null, true);
+        }
+      } catch {
+        // Abaikan URL tidak valid
       }
+      cb(null, false);
     },
     credentials: true,
   }),
