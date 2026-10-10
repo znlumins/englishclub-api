@@ -34,6 +34,8 @@ app.set('trust proxy', 1);
 // dari origin lain. Di development (tanpa FRONTEND_URL) izinkan origin Vite/Next lokal.
 const defaultAllowedOrigins = [
   'https://englishclub-vokasi.vercel.app',
+  'https://englishclubfvub.web.id',
+  'https://www.englishclubfvub.web.id',
   'http://localhost:3000',
   'http://localhost:3001',
   'http://localhost:4000',
