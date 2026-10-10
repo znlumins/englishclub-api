@@ -1,7 +1,7 @@
 {
-  "name": "lso",
+  "name": "englishclub-api",
   "version": "1.0.0",
-  "description": "Learning Management System for LSO English Club Vokasi UB",
+  "description": "Backend REST API for LMS English Club Vokasi Universitas Brawijaya",
   "main": "index.js",
   "engines": {
     "node": ">=20.0.0"

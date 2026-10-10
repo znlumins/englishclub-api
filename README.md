@@ -1,16 +1,17 @@
-# Learning Management System — English Club Vokasi UB (LSO) 🚀
+# LMS English Club Vokasi UB — Backend API 🚀
 
-Aplikasi Web Learning Management System (LMS) interaktif untuk Lembaga Semi Otonom (LSO) English Club Fakultas Vokasi Universitas Brawijaya.
+REST API server untuk Learning Management System (LMS) English Club Fakultas Vokasi Universitas Brawijaya.
 
-## 🌐 Live Application
-* **Live Web App**: [https://lso-vokasi-app.onrender.com](https://lso-vokasi-app.onrender.com)
-* **Health Check**: [https://lso-vokasi-app.onrender.com/health](https://lso-vokasi-app.onrender.com/health)
+## 🌐 Live API Service
+* **API Base URL**: [https://api.englishclubfvub.web.id](https://api.englishclubfvub.web.id)
+* **Health Check**: [https://api.englishclubfvub.web.id/health](https://api.englishclubfvub.web.id/health)
+* **Frontend Web**: [https://englishclubfvub.web.id](https://englishclubfvub.web.id)
 
 ## 🛠️ Tech Stack
-* **Frontend**: Next.js 14 (App Router), React 18, TypeScript, Tailwind CSS — repositori terpisah `englishclub`
-* **Backend**: Node.js, Express.js, Prisma ORM (v5), JWT Authentication
-* **Database**: MySQL (Laragon / cloud MySQL, `charset=utf8mb4`)
-* **Deployment**: Render.com Web Services (MySQL database), Vercel (frontend)
+* **Backend**: Node.js, Express.js 5, Prisma ORM (v5), JWT Authentication
+* **Database**: MySQL / TiDB Cloud Serverless (`charset=utf8mb4`)
+* **Deployment**: Vercel Serverless Functions (`api/index.js`)
+* **Frontend App**: Repositori terpisah `englishclub` (Next.js 14 App Router)
 
 ## 🔐 Environment Variables
 
