@@ -1,7 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
-  "buildCommand": "npx prisma generate",
+  "buildCommand": "npx prisma generate && node -e \"const fs=require('fs');if(!fs.existsSync('dist'))fs.mkdirSync('dist');\"",
+  "outputDirectory": "dist",
   "installCommand": "npm install",
   "framework": null,
   "rewrites": [
